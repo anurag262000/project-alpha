@@ -3,8 +3,8 @@
   "configurations": [
     {
       "name": "prototype",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["--yes", "serve", "prototype", "-l", "4173"],
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["prototype/server.js", "4173"],
       "port": 4173
     }
   ]
