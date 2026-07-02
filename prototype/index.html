@@ -8,82 +8,288 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.11.0/dist/tabler-icons.min.css">
 <style>
   :root{
-    --mist:#E6E7EA; --ink:#16171A; --red:#FB2C36; --red-t:#D81E28;
-    --green:#10B981; --green-t:#0A8F63;
+    --page-bg:linear-gradient(160deg,#F4F4F6,#DDDEE2);
+    --mist:#E6E7EA;
+    --glass-bg:rgba(255,255,255,0.55);
+    --glass-border:rgba(255,255,255,0.6);
+    --glass-shadow:rgba(30,32,40,0.09);
+    --glass-inset:inset 0 1px 1px rgba(255,255,255,0.85);
+    --field-bg:rgba(255,255,255,0.5);
+    --ink:#16171A; --on-ink:#F7F7F8; --ink-shadow:rgba(20,20,25,0.24);
+    --red:#FB2C36; --red-t:#D81E28; --green:#10B981; --green-t:#0A8F63;
     --tp:#1A1B1E; --ts:#6C6F76; --tm:#8C9098; --td:#B4B7BD;
+    --hair:rgba(20,20,25,0.06); --track:rgba(20,20,25,0.08); --fill-soft:rgba(20,20,25,0.06);
+    --notch:#16171A; --blob-op:0.12;
+    --tab-bg:#fff; --tab-border:rgba(0,0,0,0.06);
+  }
+  body[data-theme="dark"]{
+    --page-bg:linear-gradient(160deg,#17181B,#0A0B0D);
+    --mist:#0A0B0D;
+    --glass-bg:rgba(255,255,255,0.06);
+    --glass-border:rgba(255,255,255,0.10);
+    --glass-shadow:rgba(0,0,0,0.45);
+    --glass-inset:inset 0 1px 0 rgba(255,255,255,0.12);
+    --field-bg:rgba(255,255,255,0.05);
+    --ink:#F4F5F7; --on-ink:#0C0D0F; --ink-shadow:rgba(0,0,0,0.55);
+    --red:#FF3B47; --red-t:#FF6169; --green:#2DD576; --green-t:#4EE08C;
+    --tp:#F4F5F7; --ts:#A6ABB2; --tm:#7C828A; --td:#4E545C;
+    --hair:rgba(255,255,255,0.07); --track:rgba(255,255,255,0.08); --fill-soft:rgba(255,255,255,0.06);
+    --notch:rgba(255,255,255,0.14); --blob-op:0.18;
+    --tab-bg:#1A1C1F; --tab-border:rgba(255,255,255,0.08);
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;}
-  body{font-family:'Inter',-apple-system,system-ui,sans-serif;background:linear-gradient(160deg,#F4F4F6,#DDDEE2);min-height:100vh;color:var(--tp);display:flex;flex-direction:column;align-items:center;padding:28px 16px 48px;gap:20px;}
-  .head{text-align:center;}
+  body{font-family:'Inter',-apple-system,system-ui,sans-serif;background:var(--page-bg);min-height:100vh;color:var(--tp);display:flex;flex-direction:column;align-items:center;padding:24px 16px 60px;gap:16px;transition:background .3s;}
+  .head{text-align:center;position:relative;width:100%;max-width:640px;}
   .head h1{font-size:18px;font-weight:600;letter-spacing:-0.01em;}
   .head p{font-size:13px;color:var(--ts);margin-top:4px;}
-  .tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
-  .tab{font-family:inherit;font-size:13px;font-weight:500;color:var(--ts);background:#fff;border:1px solid rgba(0,0,0,0.06);padding:8px 14px;border-radius:20px;cursor:pointer;box-shadow:0 2px 8px rgba(20,20,25,0.06);transition:all .15s;}
-  .tab:hover{color:var(--tp);}
-  .tab.on{background:var(--ink);color:#fff;border-color:var(--ink);}
+  .theme-btn{position:absolute;right:0;top:0;font-family:inherit;font-size:13px;font-weight:500;color:var(--tp);background:var(--tab-bg);border:1px solid var(--tab-border);padding:8px 12px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:6px;box-shadow:0 2px 8px var(--glass-shadow);}
+  .switcher{display:flex;flex-direction:column;gap:8px;align-items:center;width:100%;max-width:680px;}
+  .group{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;align-items:center;}
+  .group>.glabel{font-size:11px;color:var(--tm);text-transform:uppercase;letter-spacing:.08em;margin-right:2px;}
+  .chip{font-family:inherit;font-size:12px;font-weight:500;color:var(--ts);background:var(--tab-bg);border:1px solid var(--tab-border);padding:6px 12px;border-radius:20px;cursor:pointer;box-shadow:0 2px 6px var(--glass-shadow);transition:all .15s;}
+  .chip:hover{color:var(--tp);}
+  .chip.on{background:var(--ink);color:var(--on-ink);border-color:var(--ink);}
 
-  .phone{width:390px;height:844px;background:#F4F4F6;border-radius:52px;padding:11px;box-shadow:0 40px 90px rgba(20,20,25,0.28),inset 0 0 0 1px rgba(0,0,0,0.05);position:relative;}
-  .device{position:relative;width:100%;height:100%;background:var(--mist);border-radius:42px;overflow:hidden;}
-  .notch{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:120px;height:30px;border-radius:18px;background:#16171A;z-index:20;}
+  .phone{width:390px;height:844px;background:var(--tab-bg);border-radius:52px;padding:11px;box-shadow:0 40px 90px rgba(10,10,12,0.32),inset 0 0 0 1px var(--tab-border);position:relative;margin-top:6px;transition:background .3s;}
+  .device{position:relative;width:100%;height:100%;background:var(--mist);border-radius:42px;overflow:hidden;transition:background .3s;}
+  .notch{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:120px;height:30px;border-radius:18px;background:var(--notch);z-index:20;}
 
   .screen{position:absolute;inset:0;display:none;}
   .screen.active{display:block;}
-  .blob{position:absolute;border-radius:50%;filter:blur(55px);pointer-events:none;}
+  .blob{position:absolute;border-radius:50%;filter:blur(55px);pointer-events:none;opacity:var(--blob-op);}
   .pad{position:absolute;inset:0;padding:52px 16px 16px;z-index:2;overflow-y:auto;}
   .pad::-webkit-scrollbar{display:none;}
+  .padc{position:absolute;inset:0;padding:52px 20px 20px;z-index:2;display:flex;flex-direction:column;}
   .cap{font-size:11px;color:var(--tm);letter-spacing:0.08em;text-transform:uppercase;}
-  .g{background:rgba(255,255,255,0.55);backdrop-filter:blur(28px) saturate(1.5);-webkit-backdrop-filter:blur(28px) saturate(1.5);border:1px solid rgba(255,255,255,0.6);border-radius:18px;box-shadow:0 8px 24px rgba(30,32,40,0.09),inset 0 1px 1px rgba(255,255,255,0.85);}
+  .g{background:var(--glass-bg);backdrop-filter:blur(28px) saturate(1.5);-webkit-backdrop-filter:blur(28px) saturate(1.5);border:1px solid var(--glass-border);border-radius:18px;box-shadow:0 8px 24px var(--glass-shadow),var(--glass-inset);}
   .red{color:var(--red);} .green{color:var(--green);}
-  .btn-ink{border:none;font-family:inherit;font-size:15px;font-weight:600;color:#fff;background:var(--ink);padding:15px;border-radius:15px;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 20px rgba(20,20,25,0.24);cursor:pointer;transition:transform .1s;}
+  h2.title{font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.2;}
+  .sub{font-size:13px;color:var(--ts);margin-top:8px;}
+  .btn-ink{border:none;font-family:inherit;font-size:15px;font-weight:600;color:var(--on-ink);background:var(--ink);padding:15px;border-radius:15px;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 20px var(--ink-shadow);cursor:pointer;transition:transform .1s;}
   .btn-ink:active{transform:scale(0.98);}
-  .btn-green{border:none;font-family:inherit;font-size:15px;font-weight:600;color:#fff;background:var(--green);padding:15px;border-radius:15px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 20px rgba(16,185,129,0.3);cursor:pointer;transition:transform .1s;}
+  .btn-green{border:none;font-family:inherit;font-size:15px;font-weight:600;color:#fff;background:var(--green);padding:15px;border-radius:15px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 20px color-mix(in srgb,var(--green) 35%,transparent);cursor:pointer;transition:transform .1s;}
   .btn-green:active{transform:scale(0.98);}
-  .nav{position:absolute;bottom:12px;left:16px;right:16px;height:56px;border-radius:20px;display:flex;justify-content:space-around;align-items:center;font-size:21px;color:#9CA0A6;z-index:15;}
+  .btn-ghost{border:none;font-family:inherit;font-size:14px;font-weight:500;color:var(--ts);background:transparent;padding:12px;width:100%;text-align:center;cursor:pointer;}
+  .nav{position:absolute;bottom:12px;left:16px;right:16px;height:56px;border-radius:20px;display:flex;justify-content:space-around;align-items:center;font-size:21px;color:var(--tm);z-index:15;}
   .nav i{cursor:pointer;padding:9px;border-radius:12px;transition:all .15s;}
-  .nav i.on{color:var(--ink);background:rgba(20,20,25,0.07);}
+  .nav i.on{color:var(--ink);background:var(--fill-soft);}
   .row{display:flex;align-items:center;}
-  .list-row{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid rgba(20,20,25,0.06);}
+  .between{justify-content:space-between;}
+  .list-row{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--hair);}
   .list-row:last-child{border-bottom:none;}
-  .goal{display:flex;align-items:center;gap:14px;padding:16px;border-radius:17px;cursor:pointer;transition:all .15s;}
-  .goal .ic{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-  .goal.sel{background:var(--ink);box-shadow:0 10px 24px rgba(20,20,25,0.24);}
-  .goal.sel .g-t{color:#fff;} .goal.sel .g-s{color:#A6A9B0;}
-  .goal.sel .ic{background:rgba(251,44,54,0.2);}
-  .dot{width:22px;height:6px;border-radius:20px;background:rgba(20,20,25,0.14);transition:background .2s;}
+  .pick{display:flex;align-items:center;gap:14px;padding:16px;border-radius:17px;cursor:pointer;transition:all .15s;}
+  .pick .ic{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--fill-soft);}
+  .pick .ic i{color:var(--ts);font-size:22px;}
+  .pick.sel{background:var(--ink);box-shadow:0 10px 24px var(--ink-shadow);}
+  .pick.sel .t{color:var(--on-ink);} .pick.sel .s{color:color-mix(in srgb,var(--on-ink) 65%,transparent);}
+  .pick .t{font-size:15px;font-weight:600;} .pick .s{font-size:12px;color:var(--tm);}
+  .field{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-radius:14px;background:var(--field-bg);border:1px solid var(--glass-border);}
+  .field .lbl{font-size:14px;color:var(--ts);} .field .val{font-size:15px;font-weight:600;color:var(--tp);}
+  .seg{display:flex;background:var(--field-bg);border:1px solid var(--glass-border);border-radius:12px;padding:3px;gap:2px;}
+  .seg span{font-size:13px;color:var(--ts);padding:7px 12px;border-radius:9px;cursor:pointer;transition:all .12s;}
+  .seg span.on{background:var(--ink);color:var(--on-ink);font-weight:500;}
+  .dot{width:22px;height:6px;border-radius:20px;background:var(--track);transition:background .2s;}
+  .daybtn{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:var(--ts);background:var(--field-bg);border:1px solid var(--glass-border);cursor:pointer;transition:all .15s;}
+  .daybtn.on{background:var(--ink);color:var(--on-ink);border-color:var(--ink);}
+  .fchip{font-size:12px;font-weight:500;color:var(--ts);background:var(--field-bg);border:1px solid var(--glass-border);padding:7px 13px;border-radius:20px;cursor:pointer;white-space:nowrap;}
+  .fchip.on{background:var(--ink);color:var(--on-ink);border-color:var(--ink);}
   .dial-num{padding:6px 0;text-align:center;font-size:15px;}
-  @media (max-width:440px){ .phone{transform:scale(.9);transform-origin:top center;} }
+  .avatar{width:64px;height:64px;border-radius:50%;background:var(--ink);color:var(--on-ink);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;}
+  .badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:6px 12px;border-radius:20px;}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:20px;background:var(--track);outline:none;}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--ink);cursor:pointer;box-shadow:0 2px 8px var(--ink-shadow);}
+  @media (max-width:440px){ .phone{transform:scale(.88);transform-origin:top center;} }
 </style>
 </head>
-<body>
+<body data-theme="light">
   <div class="head">
     <h1>project · alpha — UI prototype</h1>
-    <p>Light liquid glass. Tap the tabs or use the in-app buttons and bottom nav.</p>
+    <p>Light liquid glass · full screen set · light + dark</p>
+    <button class="theme-btn" id="themeBtn" onclick="toggleTheme()"><i class="ti ti-moon"></i><span>Dark</span></button>
   </div>
-  <div class="tabs">
-    <button class="tab on" data-go="home">Home</button>
-    <button class="tab" data-go="logging">Logging</button>
-    <button class="tab" data-go="onboarding">Onboarding</button>
-    <button class="tab" data-go="progress">Progress</button>
+  <div class="switcher">
+    <div class="group">
+      <span class="glabel">Onboarding</span>
+      <button class="chip" data-go="welcome">Welcome</button>
+      <button class="chip" data-go="basics">Basics</button>
+      <button class="chip" data-go="goal">Goal</button>
+      <button class="chip" data-go="experience">Experience</button>
+      <button class="chip" data-go="schedule">Schedule</button>
+      <button class="chip" data-go="equipment">Equipment</button>
+      <button class="chip" data-go="ready">Plan ready</button>
+    </div>
+    <div class="group">
+      <span class="glabel">App</span>
+      <button class="chip on" data-go="home">Home</button>
+      <button class="chip" data-go="program">Program</button>
+      <button class="chip" data-go="library">Library</button>
+      <button class="chip" data-go="logging">Logging</button>
+      <button class="chip" data-go="summary">Summary</button>
+      <button class="chip" data-go="progress">Progress</button>
+      <button class="chip" data-go="profile">Profile</button>
+    </div>
   </div>
 
   <div class="phone"><div class="device">
     <div class="notch"></div>
 
+    <!-- WELCOME -->
+    <div class="screen" id="welcome">
+      <div class="blob" style="width:220px;height:220px;background:var(--red);top:-40px;right:-40px;"></div>
+      <div class="blob" style="width:220px;height:220px;background:var(--green);bottom:60px;left:-60px;"></div>
+      <div class="padc">
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+          <div style="width:60px;height:60px;border-radius:18px;background:var(--ink);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 24px var(--ink-shadow);"><i class="ti ti-bolt" style="font-size:32px;color:var(--on-ink);"></i></div>
+          <h2 class="title" style="font-size:30px;margin-top:22px;">Plan it.<br>Track it.<br>Progress.</h2>
+          <p class="sub" style="font-size:15px;">One app for your steps, your training split, and the numbers that prove it's working.</p>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:26px;">
+            <div class="g row" style="gap:12px;padding:13px 15px;"><i class="ti ti-walk green" style="font-size:20px;"></i><span style="font-size:14px;">Steps + activity, built in</span></div>
+            <div class="g row" style="gap:12px;padding:13px 15px;"><i class="ti ti-calendar-stats red" style="font-size:20px;"></i><span style="font-size:14px;">A split planned around your week</span></div>
+            <div class="g row" style="gap:12px;padding:13px 15px;"><i class="ti ti-adjustments-alt" style="font-size:20px;color:var(--ts);"></i><span style="font-size:14px;">Scroll-dial logging, no keyboard</span></div>
+          </div>
+        </div>
+        <button class="btn-ink" onclick="go('basics')">Get started<i class="ti ti-arrow-right" style="font-size:17px;"></i></button>
+        <button class="btn-ghost" onclick="go('home')">I already have an account</button>
+      </div>
+    </div>
+
+    <!-- BASICS -->
+    <div class="screen" id="basics">
+      <div class="blob" style="width:200px;height:200px;background:var(--green);top:100px;right:-60px;"></div>
+      <div class="pad">
+        <div class="cap">Step 1 of 8</div>
+        <div style="height:5px;border-radius:20px;background:var(--track);margin:10px 0 22px;overflow:hidden;"><div style="width:12.5%;height:100%;background:var(--ink);"></div></div>
+        <h2 class="title">About you</h2>
+        <p class="sub">The baseline your progress is measured against.</p>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:22px;">
+          <div class="field"><span class="lbl">Sex</span><div class="seg" data-single><span class="on">Male</span><span>Female</span></div></div>
+          <div class="field"><span class="lbl">Date of birth</span><span class="val">12 Jun 1998</span></div>
+          <div class="field"><span class="lbl">Height</span><span class="val">178 cm</span></div>
+          <div class="field" style="flex-wrap:wrap;gap:10px;"><div class="row between" style="width:100%;"><span class="lbl">Weight</span><span class="val">81.6 kg</span></div><div class="seg" data-single style="width:100%;"><span class="on" style="flex:1;text-align:center;">Estimated</span><span style="flex:1;text-align:center;">Measured</span></div></div>
+        </div>
+        <div style="margin-top:20px;"><button class="btn-ink" onclick="go('goal')">Continue<i class="ti ti-arrow-right" style="font-size:17px;"></i></button></div>
+        <div style="height:20px;"></div>
+      </div>
+    </div>
+
+    <!-- GOAL -->
+    <div class="screen" id="goal">
+      <div class="blob" style="width:200px;height:200px;background:var(--red);top:120px;right:-60px;"></div>
+      <div class="blob" style="width:180px;height:180px;background:var(--green);bottom:40px;left:-50px;"></div>
+      <div class="pad">
+        <div class="cap">Step 3 of 8</div>
+        <div style="height:5px;border-radius:20px;background:var(--track);margin:10px 0 22px;overflow:hidden;"><div style="width:37.5%;height:100%;background:var(--ink);"></div></div>
+        <h2 class="title">What's your<br>main goal?</h2>
+        <p class="sub">This shapes your rep ranges and weekly volume.</p>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:22px;" data-radio="goal">
+          <div class="pick sel"><div class="ic"><i class="ti ti-flame" style="color:var(--red);"></i></div><div style="flex:1;"><div class="t">Fat loss</div><div class="s">Lean out, keep strength</div></div><i class="ti ti-circle-check chk" style="font-size:22px;color:var(--on-ink);"></i></div>
+          <div class="pick g"><div class="ic"><i class="ti ti-barbell"></i></div><div style="flex:1;"><div class="t">Muscle gain</div><div class="s">Build size and mass</div></div></div>
+          <div class="pick g"><div class="ic"><i class="ti ti-refresh"></i></div><div style="flex:1;"><div class="t">Recomp</div><div class="s">Lose fat, gain muscle</div></div></div>
+          <div class="pick g"><div class="ic"><i class="ti ti-heart"></i></div><div style="flex:1;"><div class="t">General fitness</div><div class="s">Stay healthy and active</div></div></div>
+        </div>
+        <div style="margin-top:20px;"><button class="btn-ink" onclick="go('experience')">Continue<i class="ti ti-arrow-right" style="font-size:17px;"></i></button></div>
+        <div style="height:20px;"></div>
+      </div>
+    </div>
+
+    <!-- EXPERIENCE -->
+    <div class="screen" id="experience">
+      <div class="blob" style="width:200px;height:200px;background:var(--green);top:80px;left:-50px;"></div>
+      <div class="pad">
+        <div class="cap">Step 4 of 8</div>
+        <div style="height:5px;border-radius:20px;background:var(--track);margin:10px 0 22px;overflow:hidden;"><div style="width:50%;height:100%;background:var(--ink);"></div></div>
+        <h2 class="title">How long have<br>you trained?</h2>
+        <p class="sub">Sets your starting volume and which splits fit.</p>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:22px;" data-radio="exp">
+          <div class="pick g"><div class="ic"><i class="ti ti-seedling"></i></div><div style="flex:1;"><div class="t">New to lifting</div><div class="s">Just getting started</div></div></div>
+          <div class="pick g"><div class="ic"><i class="ti ti-flame"></i></div><div style="flex:1;"><div class="t">Under 1 year</div><div class="s">Building the habit</div></div></div>
+          <div class="pick sel"><div class="ic"><i class="ti ti-trending-up" style="color:var(--red);"></i></div><div style="flex:1;"><div class="t">1–3 years</div><div class="s">Consistent and progressing</div></div><i class="ti ti-circle-check chk" style="font-size:22px;color:var(--on-ink);"></i></div>
+          <div class="pick g"><div class="ic"><i class="ti ti-award"></i></div><div style="flex:1;"><div class="t">3+ years</div><div class="s">Advanced trainer</div></div></div>
+        </div>
+        <div style="margin-top:20px;"><button class="btn-ink" onclick="go('schedule')">Continue<i class="ti ti-arrow-right" style="font-size:17px;"></i></button></div>
+        <div style="height:20px;"></div>
+      </div>
+    </div>
+
+    <!-- SCHEDULE -->
+    <div class="screen" id="schedule">
+      <div class="blob" style="width:200px;height:200px;background:var(--red);bottom:120px;right:-60px;"></div>
+      <div class="pad">
+        <div class="cap">Step 5 of 8</div>
+        <div style="height:5px;border-radius:20px;background:var(--track);margin:10px 0 22px;overflow:hidden;"><div style="width:62.5%;height:100%;background:var(--ink);"></div></div>
+        <h2 class="title">Your week</h2>
+        <p class="sub">Which days can you train, and for how long?</p>
+        <div class="cap" style="margin:24px 0 12px;">Training days · 4 selected</div>
+        <div class="row between" data-days>
+          <div class="daybtn on">M</div><div class="daybtn">T</div><div class="daybtn on">W</div><div class="daybtn">T</div><div class="daybtn on">F</div><div class="daybtn on">S</div><div class="daybtn">S</div>
+        </div>
+        <div class="cap" style="margin:26px 0 12px;">Session length</div>
+        <div class="g" style="padding:18px 16px;">
+          <div class="row between" style="margin-bottom:14px;"><span style="font-size:14px;color:var(--ts);">Per session</span><span style="font-size:20px;font-weight:700;">60 min</span></div>
+          <input type="range" min="30" max="90" step="15" value="60" oninput="this.parentNode.querySelector('span:last-child').textContent=this.value+' min'">
+          <div class="row between" style="margin-top:8px;font-size:11px;color:var(--tm);"><span>30</span><span>45</span><span>60</span><span>75</span><span>90</span></div>
+        </div>
+        <div style="margin-top:24px;"><button class="btn-ink" onclick="go('equipment')">Continue<i class="ti ti-arrow-right" style="font-size:17px;"></i></button></div>
+        <div style="height:20px;"></div>
+      </div>
+    </div>
+
+    <!-- EQUIPMENT -->
+    <div class="screen" id="equipment">
+      <div class="blob" style="width:200px;height:200px;background:var(--green);top:100px;right:-50px;"></div>
+      <div class="pad">
+        <div class="cap">Step 6 of 8</div>
+        <div style="height:5px;border-radius:20px;background:var(--track);margin:10px 0 22px;overflow:hidden;"><div style="width:75%;height:100%;background:var(--ink);"></div></div>
+        <h2 class="title">What can you<br>train with?</h2>
+        <p class="sub">We only pick exercises you can actually do.</p>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:22px;" data-radio="equip">
+          <div class="pick g"><div class="ic"><i class="ti ti-home"></i></div><div style="flex:1;"><div class="t">Home · minimal</div><div class="s">Bodyweight and bands</div></div></div>
+          <div class="pick g"><div class="ic"><i class="ti ti-home-cog"></i></div><div style="flex:1;"><div class="t">Home · full</div><div class="s">Dumbbells and a bench</div></div></div>
+          <div class="pick sel"><div class="ic"><i class="ti ti-building-warehouse" style="color:var(--red);"></i></div><div style="flex:1;"><div class="t">Full gym</div><div class="s">Barbells, machines, cables</div></div><i class="ti ti-circle-check chk" style="font-size:22px;color:var(--on-ink);"></i></div>
+        </div>
+        <div style="margin-top:20px;"><button class="btn-ink" onclick="go('ready')">Continue<i class="ti ti-arrow-right" style="font-size:17px;"></i></button></div>
+        <div style="height:20px;"></div>
+      </div>
+    </div>
+
+    <!-- PLAN READY -->
+    <div class="screen" id="ready">
+      <div class="blob" style="width:240px;height:240px;background:var(--green);top:-30px;right:-50px;"></div>
+      <div class="blob" style="width:200px;height:200px;background:var(--red);bottom:80px;left:-50px;"></div>
+      <div class="padc">
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+          <div class="badge" style="align-self:flex-start;background:color-mix(in srgb,var(--green) 15%,transparent);color:var(--green-t);"><i class="ti ti-sparkles"></i>Your plan is ready</div>
+          <h2 class="title" style="font-size:26px;margin-top:16px;">Upper / Lower<br>· 4 days · fat loss</h2>
+          <p class="sub">4 days a week with 1–3 years experience → an upper/lower split blending strength and hypertrophy, tuned for a fat-loss phase.</p>
+          <div class="g" style="padding:14px;margin-top:22px;">
+            <div class="cap" style="margin-bottom:12px;">Your week</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div class="row between"><span style="font-size:14px;font-weight:500;">Mon · Upper A</span><span style="font-size:12px;color:var(--tm);">6 exercises</span></div>
+              <div class="row between"><span style="font-size:14px;font-weight:500;">Wed · Lower A</span><span style="font-size:12px;color:var(--tm);">5 exercises</span></div>
+              <div class="row between"><span style="font-size:14px;font-weight:500;">Fri · Upper B</span><span style="font-size:12px;color:var(--tm);">6 exercises</span></div>
+              <div class="row between"><span style="font-size:14px;font-weight:500;">Sat · Lower B</span><span style="font-size:12px;color:var(--tm);">5 exercises</span></div>
+            </div>
+          </div>
+        </div>
+        <button class="btn-ink" onclick="go('home')">Start training<i class="ti ti-arrow-right" style="font-size:17px;"></i></button>
+      </div>
+    </div>
+
     <!-- HOME -->
     <div class="screen active" id="home">
-      <div class="blob" style="width:190px;height:190px;background:var(--red);opacity:.12;top:-30px;right:-30px;"></div>
-      <div class="blob" style="width:210px;height:210px;background:var(--green);opacity:.1;bottom:120px;left:-60px;"></div>
+      <div class="blob" style="width:190px;height:190px;background:var(--red);top:-30px;right:-30px;"></div>
+      <div class="blob" style="width:210px;height:210px;background:var(--green);bottom:120px;left:-60px;"></div>
       <div class="pad">
-        <div class="row" style="justify-content:space-between;align-items:flex-start;">
+        <div class="row between" style="align-items:flex-start;">
           <div><div class="cap">Wednesday · upper A</div><div style="font-size:22px;font-weight:700;letter-spacing:-.02em;margin-top:3px;line-height:1.2;">Good evening,<br>Anurag</div></div>
           <div class="g row" style="gap:5px;font-size:13px;font-weight:600;padding:8px 12px;border-radius:20px;"><i class="ti ti-flame red" style="font-size:16px;"></i>12</div>
         </div>
         <div class="g row" style="margin-top:18px;padding:16px;gap:16px;">
           <svg width="86" height="86" viewBox="0 0 120 120">
-            <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(20,20,25,.08)" stroke-width="9"/>
-            <circle cx="60" cy="60" r="52" fill="none" stroke="#10B981" stroke-width="9" stroke-linecap="round" stroke-dasharray="228 327" transform="rotate(-90 60 60)"/>
-            <circle cx="60" cy="60" r="39" fill="none" stroke="rgba(20,20,25,.08)" stroke-width="9"/>
-            <circle cx="60" cy="60" r="39" fill="none" stroke="#FB2C36" stroke-width="9" stroke-linecap="round" stroke-dasharray="135 245" transform="rotate(-90 60 60)"/>
+            <circle cx="60" cy="60" r="52" fill="none" style="stroke:var(--track);" stroke-width="9"/>
+            <circle cx="60" cy="60" r="52" fill="none" style="stroke:var(--green);" stroke-width="9" stroke-linecap="round" stroke-dasharray="228 327" transform="rotate(-90 60 60)"/>
+            <circle cx="60" cy="60" r="39" fill="none" style="stroke:var(--track);" stroke-width="9"/>
+            <circle cx="60" cy="60" r="39" fill="none" style="stroke:var(--red);" stroke-width="9" stroke-linecap="round" stroke-dasharray="135 245" transform="rotate(-90 60 60)"/>
           </svg>
           <div>
             <div style="font-size:24px;font-weight:700;letter-spacing:-.02em;">7,420<span style="font-size:13px;color:var(--tm);font-weight:400;"> steps</span></div>
@@ -91,42 +297,81 @@
             <div style="font-size:12px;color:var(--red-t);margin-top:6px;">38 active min</div>
           </div>
         </div>
-        <div class="row" style="justify-content:space-between;margin:20px 0 10px;"><span class="cap">Today's workout</span><span style="font-size:12px;color:var(--tm);">5 exercises · ~48 min</span></div>
+        <div class="row between" style="margin:20px 0 10px;"><span class="cap">Today's workout</span><span style="font-size:12px;color:var(--tm);">5 exercises · ~48 min</span></div>
         <div class="g" style="padding:2px 14px;">
-          <div class="list-row" onclick="go('logging')" style="cursor:pointer;"><span style="font-size:13px;color:#9CA0A6;width:16px;">1</span><div style="flex:1;"><div style="font-size:14px;font-weight:500;">Bench press</div><div style="font-size:12px;color:var(--tm);">4 × 6–8</div></div><i class="ti ti-chevron-right" style="color:var(--td);"></i></div>
-          <div class="list-row"><span style="font-size:13px;color:#9CA0A6;width:16px;">2</span><div style="flex:1;"><div style="font-size:14px;font-weight:500;">Barbell row</div><div style="font-size:12px;color:var(--tm);">4 × 8–10</div></div><i class="ti ti-chevron-right" style="color:var(--td);"></i></div>
-          <div class="list-row"><span style="font-size:13px;color:#9CA0A6;width:16px;">3</span><div style="flex:1;"><div style="font-size:14px;font-weight:500;">Overhead press</div><div style="font-size:12px;color:var(--tm);">3 × 8–10</div></div><i class="ti ti-chevron-right" style="color:var(--td);"></i></div>
+          <div class="list-row" onclick="go('logging')" style="cursor:pointer;"><span style="font-size:13px;color:var(--tm);width:16px;">1</span><div style="flex:1;"><div style="font-size:14px;font-weight:500;">Bench press</div><div style="font-size:12px;color:var(--tm);">4 × 6–8</div></div><i class="ti ti-chevron-right" style="color:var(--td);"></i></div>
+          <div class="list-row"><span style="font-size:13px;color:var(--tm);width:16px;">2</span><div style="flex:1;"><div style="font-size:14px;font-weight:500;">Barbell row</div><div style="font-size:12px;color:var(--tm);">4 × 8–10</div></div><i class="ti ti-chevron-right" style="color:var(--td);"></i></div>
+          <div class="list-row"><span style="font-size:13px;color:var(--tm);width:16px;">3</span><div style="flex:1;"><div style="font-size:14px;font-weight:500;">Overhead press</div><div style="font-size:12px;color:var(--tm);">3 × 8–10</div></div><i class="ti ti-chevron-right" style="color:var(--td);"></i></div>
         </div>
         <div style="margin-top:16px;"><button class="btn-ink" onclick="go('logging')"><i class="ti ti-player-play" style="font-size:17px;"></i>Start workout</button></div>
         <div style="height:70px;"></div>
       </div>
-      <div class="g nav"><i class="ti ti-home on" onclick="go('home')"></i><i class="ti ti-barbell" onclick="go('logging')"></i><i class="ti ti-chart-line" onclick="go('progress')"></i><i class="ti ti-user" onclick="go('onboarding')"></i></div>
+      <div class="g nav"><i class="ti ti-home on" onclick="go('home')"></i><i class="ti ti-calendar-stats" onclick="go('program')"></i><i class="ti ti-chart-line" onclick="go('progress')"></i><i class="ti ti-user" onclick="go('profile')"></i></div>
+    </div>
+
+    <!-- PROGRAM -->
+    <div class="screen" id="program">
+      <div class="blob" style="width:200px;height:200px;background:var(--red);top:60px;right:-50px;"></div>
+      <div class="blob" style="width:180px;height:180px;background:var(--green);bottom:140px;left:-50px;"></div>
+      <div class="pad">
+        <div class="row between"><div><div class="cap">Active program</div><div style="font-size:20px;font-weight:700;letter-spacing:-.02em;">Upper / Lower</div></div><span class="g" style="font-size:12px;font-weight:500;padding:7px 13px;border-radius:20px;">Week 3</span></div>
+        <div class="g" style="padding:14px 16px;margin-top:16px;">
+          <div class="row between"><span class="cap">This week</span><span style="font-size:12px;color:var(--green-t);">2 of 4 done</span></div>
+          <div class="row" style="gap:6px;margin-top:10px;"><span class="dot" style="background:var(--green);"></span><span class="dot" style="background:var(--green);"></span><span class="dot" style="background:var(--ink);"></span><span class="dot"></span></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:16px;">
+          <div class="g" style="padding:14px 16px;opacity:.7;"><div class="row between"><div class="row" style="gap:10px;"><i class="ti ti-circle-check green" style="font-size:20px;"></i><div><div style="font-size:15px;font-weight:600;">Upper A</div><div style="font-size:12px;color:var(--tm);">Chest · back · shoulders</div></div></div><span style="font-size:12px;color:var(--tm);">Mon</span></div></div>
+          <div class="g" style="padding:14px 16px;opacity:.7;"><div class="row between"><div class="row" style="gap:10px;"><i class="ti ti-circle-check green" style="font-size:20px;"></i><div><div style="font-size:15px;font-weight:600;">Lower A</div><div style="font-size:12px;color:var(--tm);">Quads · hamstrings · glutes</div></div></div><span style="font-size:12px;color:var(--tm);">Wed</span></div></div>
+          <div style="border-radius:18px;padding:14px 16px;background:var(--ink);box-shadow:0 10px 24px var(--ink-shadow);"><div class="row between"><div class="row" style="gap:10px;"><i class="ti ti-player-play" style="font-size:20px;color:var(--on-ink);"></i><div><div style="font-size:15px;font-weight:600;color:var(--on-ink);">Upper B · today</div><div style="font-size:12px;color:color-mix(in srgb,var(--on-ink) 60%,transparent);">Bench · row · OHP · +3</div></div></div><i class="ti ti-chevron-right" style="color:var(--on-ink);" onclick="go('logging')"></i></div></div>
+          <div class="g" style="padding:14px 16px;"><div class="row between"><div class="row" style="gap:10px;"><i class="ti ti-circle" style="font-size:20px;color:var(--td);"></i><div><div style="font-size:15px;font-weight:600;">Lower B</div><div style="font-size:12px;color:var(--tm);">Deadlift · lunge · calves</div></div></div><span style="font-size:12px;color:var(--tm);">Sat</span></div></div>
+        </div>
+        <div style="height:70px;"></div>
+      </div>
+      <div class="g nav"><i class="ti ti-home" onclick="go('home')"></i><i class="ti ti-calendar-stats on" onclick="go('program')"></i><i class="ti ti-chart-line" onclick="go('progress')"></i><i class="ti ti-user" onclick="go('profile')"></i></div>
+    </div>
+
+    <!-- LIBRARY -->
+    <div class="screen" id="library">
+      <div class="blob" style="width:200px;height:200px;background:var(--green);top:80px;right:-60px;"></div>
+      <div class="pad">
+        <div style="font-size:20px;font-weight:700;letter-spacing:-.02em;">Exercises</div>
+        <div class="field" style="margin-top:14px;"><span class="lbl"><i class="ti ti-search" style="margin-right:8px;"></i>Search 800+ exercises</span></div>
+        <div class="row" style="gap:8px;margin:16px 0 8px;overflow-x:auto;" data-filter>
+          <span class="fchip on">All</span><span class="fchip">Chest</span><span class="fchip">Back</span><span class="fchip">Legs</span><span class="fchip">Shoulders</span><span class="fchip">Arms</span>
+        </div>
+        <div class="g" style="padding:2px 14px;margin-top:8px;">
+          <div class="list-row"><div style="width:38px;height:38px;border-radius:10px;background:var(--fill-soft);display:flex;align-items:center;justify-content:center;"><i class="ti ti-barbell" style="color:var(--ts);"></i></div><div style="flex:1;"><div style="font-size:14px;font-weight:500;">Barbell bench press</div><div style="font-size:12px;color:var(--tm);">Chest · barbell</div></div><i class="ti ti-plus" style="color:var(--td);"></i></div>
+          <div class="list-row"><div style="width:38px;height:38px;border-radius:10px;background:var(--fill-soft);display:flex;align-items:center;justify-content:center;"><i class="ti ti-barbell" style="color:var(--ts);"></i></div><div style="flex:1;"><div style="font-size:14px;font-weight:500;">Incline dumbbell press</div><div style="font-size:12px;color:var(--tm);">Chest · dumbbell</div></div><i class="ti ti-plus" style="color:var(--td);"></i></div>
+          <div class="list-row"><div style="width:38px;height:38px;border-radius:10px;background:var(--fill-soft);display:flex;align-items:center;justify-content:center;"><i class="ti ti-stretching" style="color:var(--ts);"></i></div><div style="flex:1;"><div style="font-size:14px;font-weight:500;">Push-up</div><div style="font-size:12px;color:var(--tm);">Chest · bodyweight</div></div><i class="ti ti-plus" style="color:var(--td);"></i></div>
+          <div class="list-row"><div style="width:38px;height:38px;border-radius:10px;background:var(--fill-soft);display:flex;align-items:center;justify-content:center;"><i class="ti ti-cable" style="color:var(--ts);"></i></div><div style="flex:1;"><div style="font-size:14px;font-weight:500;">Cable fly</div><div style="font-size:12px;color:var(--tm);">Chest · cable</div></div><i class="ti ti-plus" style="color:var(--td);"></i></div>
+          <div class="list-row"><div style="width:38px;height:38px;border-radius:10px;background:var(--fill-soft);display:flex;align-items:center;justify-content:center;"><i class="ti ti-barbell" style="color:var(--ts);"></i></div><div style="flex:1;"><div style="font-size:14px;font-weight:500;">Dips</div><div style="font-size:12px;color:var(--tm);">Chest · bodyweight</div></div><i class="ti ti-plus" style="color:var(--td);"></i></div>
+        </div>
+        <div style="height:70px;"></div>
+      </div>
+      <div class="g nav"><i class="ti ti-home" onclick="go('home')"></i><i class="ti ti-calendar-stats" onclick="go('program')"></i><i class="ti ti-chart-line" onclick="go('progress')"></i><i class="ti ti-user" onclick="go('profile')"></i></div>
     </div>
 
     <!-- LOGGING -->
     <div class="screen" id="logging">
-      <div class="blob" style="width:230px;height:170px;background:var(--red);opacity:.13;top:90px;left:50%;transform:translateX(-50%);"></div>
+      <div class="blob" style="width:230px;height:170px;background:var(--red);top:90px;left:50%;transform:translateX(-50%);"></div>
       <div class="pad">
-        <div class="row" style="justify-content:space-between;">
+        <div class="row between">
           <i class="ti ti-chevron-left" style="font-size:22px;color:var(--tm);cursor:pointer;" onclick="go('home')"></i>
           <div style="text-align:center;"><div style="font-size:15px;font-weight:600;">Bench press</div><div class="cap">set <span id="setNo">3</span> of 4</div></div>
           <i class="ti ti-dots" style="font-size:22px;color:var(--tm);"></i>
         </div>
         <div style="text-align:center;font-size:12px;color:var(--tm);margin:16px 0 6px;">last time · <span style="color:var(--red-t);">60 kg × 8 @ 8</span></div>
         <div class="g" style="padding:8px 6px;position:relative;">
-          <div style="position:absolute;left:8px;right:8px;top:50%;transform:translateY(-50%);height:52px;border-radius:13px;background:var(--ink);box-shadow:0 6px 16px rgba(20,20,25,.25);"></div>
+          <div style="position:absolute;left:8px;right:8px;top:50%;transform:translateY(-50%);height:52px;border-radius:13px;background:var(--ink);box-shadow:0 6px 16px var(--ink-shadow);"></div>
           <div class="row" style="position:relative;">
-            <div style="flex:1;"><div class="cap" style="text-align:center;padding-bottom:4px;">KG</div><div class="dial-num" style="color:var(--td);">57.5</div><div class="dial-num" style="color:var(--tm);">60</div><div class="dial-num" style="font-size:26px;font-weight:700;color:#fff;">62.5</div><div class="dial-num" style="color:var(--tm);">65</div><div class="dial-num" style="color:var(--td);">67.5</div></div>
-            <div style="flex:1;border-left:1px solid rgba(20,20,25,.06);border-right:1px solid rgba(20,20,25,.06);"><div class="cap" style="text-align:center;padding-bottom:4px;">REPS</div><div class="dial-num" style="color:var(--td);">6</div><div class="dial-num" style="color:var(--tm);">7</div><div class="dial-num" style="font-size:26px;font-weight:700;color:#fff;">8</div><div class="dial-num" style="color:var(--tm);">9</div><div class="dial-num" style="color:var(--td);">10</div></div>
-            <div style="flex:1;"><div class="cap" style="text-align:center;padding-bottom:4px;">RPE</div><div class="dial-num" style="color:var(--td);">7</div><div class="dial-num" style="color:var(--tm);">7.5</div><div class="dial-num" style="font-size:26px;font-weight:700;color:#fff;">8</div><div class="dial-num" style="color:var(--tm);">8.5</div><div class="dial-num" style="color:var(--td);">9</div></div>
+            <div style="flex:1;"><div class="cap" style="text-align:center;padding-bottom:4px;">KG</div><div class="dial-num" style="color:var(--td);">57.5</div><div class="dial-num" style="color:var(--tm);">60</div><div class="dial-num" style="font-size:26px;font-weight:700;color:var(--on-ink);">62.5</div><div class="dial-num" style="color:var(--tm);">65</div><div class="dial-num" style="color:var(--td);">67.5</div></div>
+            <div style="flex:1;border-left:1px solid var(--hair);border-right:1px solid var(--hair);"><div class="cap" style="text-align:center;padding-bottom:4px;">REPS</div><div class="dial-num" style="color:var(--td);">6</div><div class="dial-num" style="color:var(--tm);">7</div><div class="dial-num" style="font-size:26px;font-weight:700;color:var(--on-ink);">8</div><div class="dial-num" style="color:var(--tm);">9</div><div class="dial-num" style="color:var(--td);">10</div></div>
+            <div style="flex:1;"><div class="cap" style="text-align:center;padding-bottom:4px;">RPE</div><div class="dial-num" style="color:var(--td);">7</div><div class="dial-num" style="color:var(--tm);">7.5</div><div class="dial-num" style="font-size:26px;font-weight:700;color:var(--on-ink);">8</div><div class="dial-num" style="color:var(--tm);">8.5</div><div class="dial-num" style="color:var(--td);">9</div></div>
           </div>
         </div>
         <div style="text-align:center;font-size:11px;color:var(--tm);margin-top:8px;"><i class="ti ti-arrows-vertical"></i> scroll to dial · no keyboard</div>
         <div class="row" id="dots" style="gap:6px;justify-content:center;margin-top:16px;">
-          <span class="dot" style="background:var(--green);"></span>
-          <span class="dot" style="background:var(--green);"></span>
-          <span class="dot" style="background:var(--ink);"></span>
-          <span class="dot"></span>
+          <span class="dot" style="background:var(--green);"></span><span class="dot" style="background:var(--green);"></span><span class="dot" style="background:var(--ink);"></span><span class="dot"></span>
         </div>
         <div class="row" style="gap:10px;margin-top:18px;">
           <div class="g row" style="padding:13px 14px;gap:8px;"><i class="ti ti-clock green" style="font-size:18px;"></i><span style="font-size:15px;font-weight:600;">1:30</span></div>
@@ -135,36 +380,36 @@
       </div>
     </div>
 
-    <!-- ONBOARDING -->
-    <div class="screen" id="onboarding">
-      <div class="blob" style="width:200px;height:200px;background:var(--red);opacity:.11;top:120px;right:-60px;"></div>
-      <div class="blob" style="width:180px;height:180px;background:var(--green);opacity:.1;bottom:40px;left:-50px;"></div>
-      <div class="pad">
-        <div class="cap">Step 4 of 8</div>
-        <div style="height:5px;border-radius:20px;background:rgba(20,20,25,.1);margin:10px 0 22px;overflow:hidden;"><div style="width:50%;height:100%;background:var(--ink);"></div></div>
-        <div style="font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.25;">What's your<br>main goal?</div>
-        <div style="font-size:13px;color:var(--ts);margin-top:8px;">This shapes your rep ranges and weekly volume.</div>
-        <div style="display:flex;flex-direction:column;gap:12px;margin-top:22px;" id="goals">
-          <div class="goal sel" onclick="pick(this)"><div class="ic"><i class="ti ti-flame red" style="font-size:22px;"></i></div><div style="flex:1;"><div class="g-t" style="font-size:15px;font-weight:600;">Fat loss</div><div class="g-s" style="font-size:12px;color:var(--tm);">Lean out, keep strength</div></div><i class="ti ti-circle-check chk" style="font-size:22px;color:#fff;"></i></div>
-          <div class="goal g" onclick="pick(this)"><div class="ic" style="background:rgba(20,20,25,.06);"><i class="ti ti-barbell" style="font-size:22px;color:var(--ts);"></i></div><div style="flex:1;"><div class="g-t" style="font-size:15px;font-weight:600;">Muscle gain</div><div class="g-s" style="font-size:12px;color:var(--tm);">Build size and mass</div></div></div>
-          <div class="goal g" onclick="pick(this)"><div class="ic" style="background:rgba(20,20,25,.06);"><i class="ti ti-refresh" style="font-size:22px;color:var(--ts);"></i></div><div style="flex:1;"><div class="g-t" style="font-size:15px;font-weight:600;">Recomp</div><div class="g-s" style="font-size:12px;color:var(--tm);">Lose fat, gain muscle</div></div></div>
-          <div class="goal g" onclick="pick(this)"><div class="ic" style="background:rgba(20,20,25,.06);"><i class="ti ti-heart" style="font-size:22px;color:var(--ts);"></i></div><div style="flex:1;"><div class="g-t" style="font-size:15px;font-weight:600;">General fitness</div><div class="g-s" style="font-size:12px;color:var(--tm);">Stay healthy and active</div></div></div>
+    <!-- SUMMARY -->
+    <div class="screen" id="summary">
+      <div class="blob" style="width:260px;height:260px;background:var(--green);top:-20px;right:-40px;"></div>
+      <div class="blob" style="width:200px;height:200px;background:var(--red);bottom:60px;left:-50px;"></div>
+      <div class="padc">
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;">
+          <div style="width:72px;height:72px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;box-shadow:0 12px 30px color-mix(in srgb,var(--green) 40%,transparent);"><i class="ti ti-check" style="font-size:40px;color:#fff;"></i></div>
+          <h2 class="title" style="margin-top:20px;">Upper A done</h2>
+          <p class="sub">Nice work — that's 3 sessions this week.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;width:100%;margin-top:24px;">
+            <div class="g" style="padding:14px 8px;"><div style="font-size:20px;font-weight:700;">7.2k</div><div class="cap" style="margin-top:2px;">volume kg</div></div>
+            <div class="g" style="padding:14px 8px;"><div style="font-size:20px;font-weight:700;">52<span style="font-size:12px;font-weight:400;color:var(--tm);">m</span></div><div class="cap" style="margin-top:2px;">duration</div></div>
+            <div class="g" style="padding:14px 8px;"><div style="font-size:20px;font-weight:700;">24</div><div class="cap" style="margin-top:2px;">sets</div></div>
+          </div>
+          <div class="badge" style="margin-top:16px;background:color-mix(in srgb,var(--red) 15%,transparent);color:var(--red-t);"><i class="ti ti-trophy"></i>New PR · Bench 62.5 kg × 8</div>
         </div>
-        <div style="margin-top:20px;"><button class="btn-ink" onclick="go('home')">Continue<i class="ti ti-arrow-right" style="font-size:17px;"></i></button></div>
-        <div style="height:20px;"></div>
+        <button class="btn-ink" onclick="go('home')">Done<i class="ti ti-check" style="font-size:17px;"></i></button>
       </div>
     </div>
 
     <!-- PROGRESS -->
     <div class="screen" id="progress">
-      <div class="blob" style="width:200px;height:160px;background:var(--green);opacity:.11;top:40px;right:-40px;"></div>
-      <div class="blob" style="width:180px;height:180px;background:var(--red);opacity:.09;bottom:120px;left:-50px;"></div>
+      <div class="blob" style="width:200px;height:160px;background:var(--green);top:40px;right:-40px;"></div>
+      <div class="blob" style="width:180px;height:180px;background:var(--red);bottom:120px;left:-50px;"></div>
       <div class="pad">
-        <div class="row" style="justify-content:space-between;"><div style="font-size:20px;font-weight:700;letter-spacing:-.02em;">Progress</div><span class="g" style="font-size:12px;font-weight:500;padding:7px 13px;border-radius:20px;">3 months</span></div>
+        <div class="row between"><div style="font-size:20px;font-weight:700;letter-spacing:-.02em;">Progress</div><span class="g" style="font-size:12px;font-weight:500;padding:7px 13px;border-radius:20px;">3 months</span></div>
         <div class="g" style="margin-top:16px;padding:16px;">
-          <div class="row" style="justify-content:space-between;align-items:baseline;"><span class="cap">Bodyweight</span><span style="font-size:12px;color:var(--green-t);"><i class="ti ti-trending-down" style="font-size:14px;"></i> −3.2 kg</span></div>
+          <div class="row between" style="align-items:baseline;"><span class="cap">Bodyweight</span><span style="font-size:12px;color:var(--green-t);"><i class="ti ti-trending-down" style="font-size:14px;"></i> −3.2 kg</span></div>
           <div class="row" style="align-items:baseline;gap:6px;margin-top:4px;"><span style="font-size:26px;font-weight:700;letter-spacing:-.02em;">78.4</span><span style="font-size:13px;color:var(--tm);">kg</span></div>
-          <svg width="100%" height="66" viewBox="0 0 260 66" preserveAspectRatio="none" style="margin-top:8px;"><polyline points="0,12 43,18 86,14 130,30 173,38 216,50 260,56" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="260" cy="56" r="3.5" fill="#10B981"/></svg>
+          <svg width="100%" height="66" viewBox="0 0 260 66" preserveAspectRatio="none" style="margin-top:8px;"><polyline points="0,12 43,18 86,14 130,30 173,38 216,50 260,56" fill="none" style="stroke:var(--green);" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="260" cy="56" r="3.5" style="fill:var(--green);"/></svg>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;">
           <div class="g" style="padding:14px;"><div class="cap">Bench 1RM</div><div style="font-size:20px;font-weight:700;margin-top:4px;">84 <span style="font-size:12px;color:var(--tm);font-weight:400;">kg</span></div><div style="font-size:12px;color:var(--green-t);margin-top:2px;">+9 kg</div></div>
@@ -174,13 +419,39 @@
         <div class="row" style="align-items:flex-end;gap:10px;height:88px;padding:0 4px;">
           <div style="flex:1;text-align:center;"><div style="height:62px;background:var(--red);border-radius:8px 8px 3px 3px;"></div><div style="font-size:10px;color:var(--tm);margin-top:6px;">Chest</div></div>
           <div style="flex:1;text-align:center;"><div style="height:76px;background:var(--green);border-radius:8px 8px 3px 3px;"></div><div style="font-size:10px;color:var(--tm);margin-top:6px;">Back</div></div>
-          <div style="flex:1;text-align:center;"><div style="height:48px;background:rgba(20,20,25,.14);border-radius:8px 8px 3px 3px;"></div><div style="font-size:10px;color:var(--tm);margin-top:6px;">Legs</div></div>
-          <div style="flex:1;text-align:center;"><div style="height:38px;background:rgba(20,20,25,.14);border-radius:8px 8px 3px 3px;"></div><div style="font-size:10px;color:var(--tm);margin-top:6px;">Delts</div></div>
-          <div style="flex:1;text-align:center;"><div style="height:30px;background:rgba(20,20,25,.14);border-radius:8px 8px 3px 3px;"></div><div style="font-size:10px;color:var(--tm);margin-top:6px;">Arms</div></div>
+          <div style="flex:1;text-align:center;"><div style="height:48px;background:var(--track);border-radius:8px 8px 3px 3px;"></div><div style="font-size:10px;color:var(--tm);margin-top:6px;">Legs</div></div>
+          <div style="flex:1;text-align:center;"><div style="height:38px;background:var(--track);border-radius:8px 8px 3px 3px;"></div><div style="font-size:10px;color:var(--tm);margin-top:6px;">Delts</div></div>
+          <div style="flex:1;text-align:center;"><div style="height:30px;background:var(--track);border-radius:8px 8px 3px 3px;"></div><div style="font-size:10px;color:var(--tm);margin-top:6px;">Arms</div></div>
         </div>
         <div style="height:70px;"></div>
       </div>
-      <div class="g nav"><i class="ti ti-home" onclick="go('home')"></i><i class="ti ti-barbell" onclick="go('logging')"></i><i class="ti ti-chart-line on" onclick="go('progress')"></i><i class="ti ti-user" onclick="go('onboarding')"></i></div>
+      <div class="g nav"><i class="ti ti-home" onclick="go('home')"></i><i class="ti ti-calendar-stats" onclick="go('program')"></i><i class="ti ti-chart-line on" onclick="go('progress')"></i><i class="ti ti-user" onclick="go('profile')"></i></div>
+    </div>
+
+    <!-- PROFILE -->
+    <div class="screen" id="profile">
+      <div class="blob" style="width:200px;height:200px;background:var(--red);top:60px;left:-50px;"></div>
+      <div class="pad">
+        <div class="row" style="gap:14px;margin-top:4px;">
+          <div class="avatar">AM</div>
+          <div><div style="font-size:18px;font-weight:700;">Anurag Mishra</div><div style="font-size:13px;color:var(--tm);">Fat loss · 1–3 yrs · Upper/Lower</div></div>
+        </div>
+        <div class="g" style="display:grid;grid-template-columns:1fr 1fr 1fr;padding:16px 8px;margin-top:18px;text-align:center;">
+          <div><div style="font-size:18px;font-weight:700;">81.6</div><div class="cap" style="margin-top:2px;">kg</div></div>
+          <div style="border-left:1px solid var(--hair);border-right:1px solid var(--hair);"><div style="font-size:18px;font-weight:700;">178</div><div class="cap" style="margin-top:2px;">cm</div></div>
+          <div><div style="font-size:18px;font-weight:700;">42</div><div class="cap" style="margin-top:2px;">workouts</div></div>
+        </div>
+        <div class="cap" style="margin:20px 0 10px;">Settings</div>
+        <div class="g" style="padding:2px 14px;">
+          <div class="list-row"><i class="ti ti-ruler-2" style="color:var(--ts);font-size:20px;"></i><span style="flex:1;font-size:14px;">Units</span><span style="font-size:13px;color:var(--tm);">Metric</span></div>
+          <div class="list-row"><i class="ti ti-heart-rate-monitor" style="color:var(--ts);font-size:20px;"></i><span style="flex:1;font-size:14px;">Health Connect</span><span class="green" style="font-size:13px;">Connected</span></div>
+          <div class="list-row"><i class="ti ti-bell" style="color:var(--ts);font-size:20px;"></i><span style="flex:1;font-size:14px;">Reminders</span><span style="font-size:13px;color:var(--tm);">7:00 PM</span></div>
+          <div class="list-row" onclick="toggleTheme()" style="cursor:pointer;"><i class="ti ti-moon" style="color:var(--ts);font-size:20px;"></i><span style="flex:1;font-size:14px;">Appearance</span><span id="profTheme" style="font-size:13px;color:var(--tm);">Light</span></div>
+          <div class="list-row"><i class="ti ti-download" style="color:var(--ts);font-size:20px;"></i><span style="flex:1;font-size:14px;">Export data</span><i class="ti ti-chevron-right" style="color:var(--td);"></i></div>
+        </div>
+        <div style="height:70px;"></div>
+      </div>
+      <div class="g nav"><i class="ti ti-home" onclick="go('home')"></i><i class="ti ti-calendar-stats" onclick="go('program')"></i><i class="ti ti-chart-line" onclick="go('progress')"></i><i class="ti ti-user on" onclick="go('profile')"></i></div>
     </div>
 
   </div></div>
@@ -188,30 +459,59 @@
 <script>
   function go(name){
     document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active', s.id===name));
-    document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on', t.dataset.go===name));
-    document.querySelector('.pad') && document.querySelectorAll('.pad').forEach(p=>p.scrollTop=0);
+    document.querySelectorAll('.chip').forEach(t=>t.classList.toggle('on', t.dataset.go===name));
+    document.querySelectorAll('.pad,.padc').forEach(p=>p.scrollTop=0);
   }
-  document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>go(t.dataset.go)));
+  document.querySelectorAll('.chip').forEach(t=>t.addEventListener('click',()=>go(t.dataset.go)));
 
-  function pick(el){
-    document.querySelectorAll('#goals .goal').forEach(g=>{
-      g.classList.remove('sel'); g.classList.add('g');
-      const ic=g.querySelector('.ic'); ic.style.background='rgba(20,20,25,.06)';
-      const i=ic.querySelector('i'); i.style.color='var(--ts)'; i.classList.remove('red');
-      const chk=g.querySelector('.chk'); if(chk) chk.remove();
-    });
-    el.classList.add('sel'); el.classList.remove('g');
-    const ic=el.querySelector('.ic'); ic.style.background='rgba(251,44,54,.2)';
-    const i=ic.querySelector('i'); if(i.classList.contains('ti-flame')){i.style.color='var(--red)';}
-    if(!el.querySelector('.chk')){const c=document.createElement('i');c.className='ti ti-circle-check chk';c.style.cssText='font-size:22px;color:#fff;';el.appendChild(c);}
+  function toggleTheme(){
+    const b=document.body, dark=b.getAttribute('data-theme')==='dark';
+    b.setAttribute('data-theme', dark?'light':'dark');
+    const btn=document.getElementById('themeBtn');
+    btn.querySelector('i').className = dark?'ti ti-moon':'ti ti-sun';
+    btn.querySelector('span').textContent = dark?'Dark':'Light';
+    const pt=document.getElementById('profTheme'); if(pt) pt.textContent = dark?'Light':'Dark';
   }
+
+  // radio-style pick groups
+  document.querySelectorAll('[data-radio]').forEach(group=>{
+    group.querySelectorAll('.pick').forEach(p=>p.addEventListener('click',()=>{
+      group.querySelectorAll('.pick').forEach(x=>{
+        x.classList.remove('sel'); x.classList.add('g');
+        const i=x.querySelector('.ic i'); if(i) i.style.color='var(--ts)';
+        const c=x.querySelector('.chk'); if(c) c.remove();
+      });
+      p.classList.add('sel'); p.classList.remove('g');
+      const i=p.querySelector('.ic i'); if(i) i.style.color='var(--red)';
+      if(!p.querySelector('.chk')){const c=document.createElement('i');c.className='ti ti-circle-check chk';c.style.cssText='font-size:22px;color:var(--on-ink);';p.appendChild(c);}
+    }));
+  });
+
+  // single-select segmented controls
+  document.querySelectorAll('.seg[data-single]').forEach(seg=>{
+    seg.querySelectorAll('span').forEach(s=>s.addEventListener('click',()=>{
+      seg.querySelectorAll('span').forEach(x=>x.classList.remove('on')); s.classList.add('on');
+    }));
+  });
+
+  // day toggles
+  document.querySelectorAll('[data-days] .daybtn').forEach(d=>d.addEventListener('click',()=>{
+    d.classList.toggle('on');
+    const n=document.querySelectorAll('[data-days] .daybtn.on').length;
+    const cap=document.querySelector('#schedule .cap'); if(cap) cap.textContent='Training days · '+n+' selected';
+  }));
+
+  // library filters
+  document.querySelectorAll('[data-filter] .fchip').forEach(f=>f.addEventListener('click',()=>{
+    document.querySelectorAll('[data-filter] .fchip').forEach(x=>x.classList.remove('on')); f.classList.add('on');
+  }));
 
   let curSet=3;
   function logSet(){
     const dots=document.querySelectorAll('#dots .dot');
     if(curSet<=4){ dots[curSet-1].style.background='var(--green)'; }
     curSet++;
-    if(curSet>4){ go('home'); curSet=3; dots.forEach((d,i)=>d.style.background=i<2?'var(--green)':(i===2?'var(--ink)':'rgba(20,20,25,.14)')); document.getElementById('setNo').textContent='3'; return; }
+    if(curSet>4){ go('summary'); curSet=3; dots.forEach((d,i)=>d.style.background=i<2?'var(--green)':(i===2?'var(--ink)':'var(--track)')); document.getElementById('setNo').textContent='3'; return; }
     dots[curSet-1].style.background='var(--ink)';
     document.getElementById('setNo').textContent=curSet;
   }

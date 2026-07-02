@@ -19,8 +19,10 @@ Personal-use first, structured to be Play-Store-ready later.
 ## Prototype
 
 - [prototype/index.html](prototype/index.html) — self-contained clickable UI
-  prototype of all four screens (Home, Logging, Onboarding, Progress) in the
-  light liquid-glass style. Open the file directly in a browser, or run
-  `npx serve prototype` and visit the shown URL.
+  prototype covering the full screen set in the liquid-glass style, with a
+  **light / dark** toggle. Onboarding (welcome, basics, goal, experience,
+  schedule, equipment, plan-ready) and the app (home, program, library,
+  logging, summary, progress, profile). Open the file directly in a browser,
+  or run `node prototype/server.js` and visit http://localhost:4173.
 
 No app code yet — this repo currently holds the planning/design phase.
