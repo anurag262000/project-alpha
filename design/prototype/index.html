@@ -112,10 +112,12 @@
       <span class="glabel">Onboarding</span>
       <button class="chip" data-go="welcome">Welcome</button>
       <button class="chip" data-go="basics">Basics</button>
+      <button class="chip" data-go="activity">Activity</button>
       <button class="chip" data-go="goal">Goal</button>
       <button class="chip" data-go="experience">Experience</button>
       <button class="chip" data-go="schedule">Schedule</button>
       <button class="chip" data-go="equipment">Equipment</button>
+      <button class="chip" data-go="health">Health</button>
       <button class="chip" data-go="ready">Plan ready</button>
     </div>
     <div class="group">
@@ -157,8 +159,8 @@
     <div class="screen" id="basics">
       <div class="blob" style="width:200px;height:200px;background:var(--green);top:100px;right:-60px;"></div>
       <div class="pad">
-        <div class="cap">Step 1 of 8</div>
-        <div style="height:5px;border-radius:20px;background:var(--track);margin:10px 0 22px;overflow:hidden;"><div style="width:12.5%;height:100%;background:var(--ink);"></div></div>
+        <div class="cap">Step 1 of 7</div>
+        <div style="height:5px;border-radius:20px;background:var(--track);margin:10px 0 22px;overflow:hidden;"><div style="width:14%;height:100%;background:var(--ink);"></div></div>
         <h2 class="title">About you</h2>
         <p class="sub">The baseline your progress is measured against.</p>
         <div style="display:flex;flex-direction:column;gap:12px;margin-top:22px;">
@@ -167,7 +169,31 @@
           <div class="field"><span class="lbl">Height</span><span class="val">178 cm</span></div>
           <div class="field" style="flex-wrap:wrap;gap:10px;"><div class="row between" style="width:100%;"><span class="lbl">Weight</span><span class="val">81.6 kg</span></div><div class="seg" data-single style="width:100%;"><span class="on" style="flex:1;text-align:center;">Estimated</span><span style="flex:1;text-align:center;">Measured</span></div></div>
         </div>
-        <div style="margin-top:20px;"><button class="btn-ink" onclick="go('goal')">Continue<i class="ti ti-arrow-right" style="font-size:17px;"></i></button></div>
+        <div class="g" style="margin-top:14px;padding:14px 16px;">
+          <div class="row between"><span class="cap">Body mass index · auto</span><span class="badge" style="background:color-mix(in srgb,var(--red) 14%,transparent);color:var(--red-t);padding:4px 10px;">Overweight</span></div>
+          <div class="row" style="align-items:baseline;gap:8px;margin-top:6px;"><span style="font-size:26px;font-weight:700;letter-spacing:-.02em;">25.8</span><span style="font-size:12px;color:var(--tm);">kg/m² · recalculates as your weight changes</span></div>
+        </div>
+        <div style="margin-top:18px;"><button class="btn-ink" onclick="go('activity')">Continue<i class="ti ti-arrow-right" style="font-size:17px;"></i></button></div>
+        <div style="height:20px;"></div>
+      </div>
+    </div>
+
+    <!-- ACTIVITY -->
+    <div class="screen" id="activity">
+      <div class="blob" style="width:200px;height:200px;background:var(--green);top:90px;left:-50px;"></div>
+      <div class="pad">
+        <div class="cap">Step 2 of 7</div>
+        <div style="height:5px;border-radius:20px;background:var(--track);margin:10px 0 22px;overflow:hidden;"><div style="width:28%;height:100%;background:var(--ink);"></div></div>
+        <h2 class="title">How active is<br>your day?</h2>
+        <p class="sub">Life outside training — this sets your daily calorie needs.</p>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:22px;" data-radio="activity">
+          <div class="pick g"><div class="ic"><i class="ti ti-armchair"></i></div><div style="flex:1;"><div class="t">Mostly sedentary</div><div class="s">Desk job, little walking</div></div></div>
+          <div class="pick g"><div class="ic"><i class="ti ti-walk"></i></div><div style="flex:1;"><div class="t">Lightly active</div><div class="s">Some walking through the day</div></div></div>
+          <div class="pick sel"><div class="ic"><i class="ti ti-run" style="color:var(--red);"></i></div><div style="flex:1;"><div class="t">Moderately active</div><div class="s">On your feet a good part of the day</div></div><i class="ti ti-circle-check chk" style="font-size:22px;color:var(--on-ink);"></i></div>
+          <div class="pick g"><div class="ic"><i class="ti ti-briefcase"></i></div><div style="flex:1;"><div class="t">Very active</div><div class="s">Physical or manual job</div></div></div>
+        </div>
+        <div class="g row" style="gap:10px;padding:12px 14px;margin-top:16px;"><i class="ti ti-bulb" style="color:var(--green);font-size:18px;"></i><span style="font-size:12px;color:var(--ts);">Combined with your training days, this sets your TDEE — the calories you burn in a day.</span></div>
+        <div style="margin-top:18px;"><button class="btn-ink" onclick="go('goal')">Continue<i class="ti ti-arrow-right" style="font-size:17px;"></i></button></div>
         <div style="height:20px;"></div>
       </div>
     </div>
@@ -177,8 +203,8 @@
       <div class="blob" style="width:200px;height:200px;background:var(--red);top:120px;right:-60px;"></div>
       <div class="blob" style="width:180px;height:180px;background:var(--green);bottom:40px;left:-50px;"></div>
       <div class="pad">
-        <div class="cap">Step 3 of 8</div>
-        <div style="height:5px;border-radius:20px;background:var(--track);margin:10px 0 22px;overflow:hidden;"><div style="width:37.5%;height:100%;background:var(--ink);"></div></div>
+        <div class="cap">Step 3 of 7</div>
+        <div style="height:5px;border-radius:20px;background:var(--track);margin:10px 0 22px;overflow:hidden;"><div style="width:42%;height:100%;background:var(--ink);"></div></div>
         <h2 class="title">What's your<br>main goal?</h2>
         <p class="sub">This shapes your rep ranges and weekly volume.</p>
         <div style="display:flex;flex-direction:column;gap:12px;margin-top:22px;" data-radio="goal">
@@ -196,8 +222,8 @@
     <div class="screen" id="experience">
       <div class="blob" style="width:200px;height:200px;background:var(--green);top:80px;left:-50px;"></div>
       <div class="pad">
-        <div class="cap">Step 4 of 8</div>
-        <div style="height:5px;border-radius:20px;background:var(--track);margin:10px 0 22px;overflow:hidden;"><div style="width:50%;height:100%;background:var(--ink);"></div></div>
+        <div class="cap">Step 4 of 7</div>
+        <div style="height:5px;border-radius:20px;background:var(--track);margin:10px 0 22px;overflow:hidden;"><div style="width:57%;height:100%;background:var(--ink);"></div></div>
         <h2 class="title">How long have<br>you trained?</h2>
         <p class="sub">Sets your starting volume and which splits fit.</p>
         <div style="display:flex;flex-direction:column;gap:12px;margin-top:22px;" data-radio="exp">
@@ -215,13 +241,17 @@
     <div class="screen" id="schedule">
       <div class="blob" style="width:200px;height:200px;background:var(--red);bottom:120px;right:-60px;"></div>
       <div class="pad">
-        <div class="cap">Step 5 of 8</div>
-        <div style="height:5px;border-radius:20px;background:var(--track);margin:10px 0 22px;overflow:hidden;"><div style="width:62.5%;height:100%;background:var(--ink);"></div></div>
+        <div class="cap">Step 5 of 7</div>
+        <div style="height:5px;border-radius:20px;background:var(--track);margin:10px 0 22px;overflow:hidden;"><div style="width:71%;height:100%;background:var(--ink);"></div></div>
         <h2 class="title">Your week</h2>
-        <p class="sub">Which days can you train, and for how long?</p>
+        <p class="sub">Which days can you train, when, and for how long?</p>
         <div class="cap" style="margin:24px 0 12px;">Training days · 4 selected</div>
         <div class="row between" data-days>
           <div class="daybtn on">M</div><div class="daybtn">T</div><div class="daybtn on">W</div><div class="daybtn">T</div><div class="daybtn on">F</div><div class="daybtn on">S</div><div class="daybtn">S</div>
+        </div>
+        <div class="cap" style="margin:26px 0 12px;">Preferred time</div>
+        <div class="seg" data-single style="width:100%;">
+          <span style="flex:1;text-align:center;">Morning</span><span style="flex:1;text-align:center;">Midday</span><span class="on" style="flex:1;text-align:center;">Evening</span><span style="flex:1;text-align:center;">Flexible</span>
         </div>
         <div class="cap" style="margin:26px 0 12px;">Session length</div>
         <div class="g" style="padding:18px 16px;">
@@ -238,8 +268,8 @@
     <div class="screen" id="equipment">
       <div class="blob" style="width:200px;height:200px;background:var(--green);top:100px;right:-50px;"></div>
       <div class="pad">
-        <div class="cap">Step 6 of 8</div>
-        <div style="height:5px;border-radius:20px;background:var(--track);margin:10px 0 22px;overflow:hidden;"><div style="width:75%;height:100%;background:var(--ink);"></div></div>
+        <div class="cap">Step 6 of 7</div>
+        <div style="height:5px;border-radius:20px;background:var(--track);margin:10px 0 22px;overflow:hidden;"><div style="width:85%;height:100%;background:var(--ink);"></div></div>
         <h2 class="title">What can you<br>train with?</h2>
         <p class="sub">We only pick exercises you can actually do.</p>
         <div style="display:flex;flex-direction:column;gap:12px;margin-top:22px;" data-radio="equip">
@@ -247,7 +277,31 @@
           <div class="pick g"><div class="ic"><i class="ti ti-home-cog"></i></div><div style="flex:1;"><div class="t">Home · full</div><div class="s">Dumbbells and a bench</div></div></div>
           <div class="pick sel"><div class="ic"><i class="ti ti-building-warehouse" style="color:var(--red);"></i></div><div style="flex:1;"><div class="t">Full gym</div><div class="s">Barbells, machines, cables</div></div><i class="ti ti-circle-check chk" style="font-size:22px;color:var(--on-ink);"></i></div>
         </div>
-        <div style="margin-top:20px;"><button class="btn-ink" onclick="go('ready')">Continue<i class="ti ti-arrow-right" style="font-size:17px;"></i></button></div>
+        <div style="margin-top:20px;"><button class="btn-ink" onclick="go('health')">Continue<i class="ti ti-arrow-right" style="font-size:17px;"></i></button></div>
+        <div style="height:20px;"></div>
+      </div>
+    </div>
+
+    <!-- HEALTH -->
+    <div class="screen" id="health">
+      <div class="blob" style="width:200px;height:200px;background:var(--red);top:100px;right:-50px;"></div>
+      <div class="pad">
+        <div class="cap">Step 7 of 7</div>
+        <div style="height:5px;border-radius:20px;background:var(--track);margin:10px 0 22px;overflow:hidden;"><div style="width:100%;height:100%;background:var(--ink);"></div></div>
+        <h2 class="title">Health &amp;<br>readiness</h2>
+        <p class="sub">Quick safety check — keeps your plan appropriate for you.</p>
+        <div class="cap" style="margin:22px 0 10px;">Any of these apply?</div>
+        <div class="g" style="padding:2px 14px;">
+          <div class="list-row"><span style="flex:1;font-size:13px;">Heart condition diagnosed by a doctor</span><div class="seg" data-single><span style="padding:5px 11px;">Yes</span><span class="on" style="padding:5px 11px;">No</span></div></div>
+          <div class="list-row"><span style="flex:1;font-size:13px;">Chest pain during activity</span><div class="seg" data-single><span style="padding:5px 11px;">Yes</span><span class="on" style="padding:5px 11px;">No</span></div></div>
+          <div class="list-row"><span style="flex:1;font-size:13px;">On blood-pressure / heart medication</span><div class="seg" data-single><span style="padding:5px 11px;">Yes</span><span class="on" style="padding:5px 11px;">No</span></div></div>
+        </div>
+        <div class="cap" style="margin:22px 0 10px;">Any injuries to work around?</div>
+        <div class="row" style="gap:8px;flex-wrap:wrap;" data-multi>
+          <span class="fchip on">Shoulder</span><span class="fchip">Lower back</span><span class="fchip">Knee</span><span class="fchip">Wrist</span><span class="fchip">Elbow</span><span class="fchip">Hip</span><span class="fchip">None</span>
+        </div>
+        <div class="g row" style="gap:10px;padding:12px 14px;margin-top:18px;align-items:flex-start;"><i class="ti ti-shield-check" style="color:var(--green);font-size:18px;flex-shrink:0;margin-top:1px;"></i><span style="font-size:11px;color:var(--tm);">General fitness guidance, not medical advice. If any answer is "yes," check with a physician before starting. Selected injuries are excluded from your plan.</span></div>
+        <div style="margin-top:18px;"><button class="btn-ink" onclick="go('ready')">See my plan<i class="ti ti-arrow-right" style="font-size:17px;"></i></button></div>
         <div style="height:20px;"></div>
       </div>
     </div>
@@ -257,7 +311,7 @@
       <div class="blob" style="width:240px;height:240px;background:var(--green);top:-30px;right:-50px;"></div>
       <div class="blob" style="width:200px;height:200px;background:var(--red);bottom:80px;left:-50px;"></div>
       <div class="padc">
-        <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-start;overflow-y:auto;padding-top:6px;">
           <div class="badge" style="align-self:flex-start;background:color-mix(in srgb,var(--green) 15%,transparent);color:var(--green-t);"><i class="ti ti-sparkles"></i>Your plan is ready</div>
           <h2 class="title" style="font-size:26px;margin-top:16px;">Upper / Lower<br>· 4 days · fat loss</h2>
           <p class="sub">4 days a week with 1–3 years experience → an upper/lower split blending strength and hypertrophy, tuned for a fat-loss phase.</p>
@@ -270,6 +324,20 @@
               <div class="row between"><span style="font-size:14px;font-weight:500;">Sat · Lower B</span><span style="font-size:12px;color:var(--tm);">5 exercises</span></div>
             </div>
           </div>
+          <div class="g" style="padding:14px;margin-top:12px;">
+            <div class="cap" style="margin-bottom:12px;">Your daily targets</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div><div style="font-size:22px;font-weight:700;letter-spacing:-.02em;">2,224</div><div class="cap" style="margin-top:2px;">calories · fat-loss</div></div>
+              <div><div style="font-size:22px;font-weight:700;letter-spacing:-.02em;">2,780</div><div class="cap" style="margin-top:2px;">TDEE burn</div></div>
+            </div>
+            <div class="row" style="gap:8px;margin-top:14px;">
+              <div style="flex:1;text-align:center;background:var(--fill-soft);border-radius:12px;padding:10px 4px;"><div style="font-size:15px;font-weight:600;">163g</div><div class="cap" style="margin-top:2px;">protein</div></div>
+              <div style="flex:1;text-align:center;background:var(--fill-soft);border-radius:12px;padding:10px 4px;"><div style="font-size:15px;font-weight:600;">62g</div><div class="cap" style="margin-top:2px;">fat</div></div>
+              <div style="flex:1;text-align:center;background:var(--fill-soft);border-radius:12px;padding:10px 4px;"><div style="font-size:15px;font-weight:600;">254g</div><div class="cap" style="margin-top:2px;">carbs</div></div>
+            </div>
+            <div class="row between" style="margin-top:12px;"><span style="font-size:12px;color:var(--ts);">Complete your profile for finer targets</span><span style="font-size:12px;color:var(--green-t);font-weight:500;">Later ›</span></div>
+          </div>
+          <div style="height:8px;"></div>
         </div>
         <button class="btn-ink" onclick="go('home')">Start training<i class="ti ti-arrow-right" style="font-size:17px;"></i></button>
       </div>
@@ -505,6 +573,16 @@
   document.querySelectorAll('[data-filter] .fchip').forEach(f=>f.addEventListener('click',()=>{
     document.querySelectorAll('[data-filter] .fchip').forEach(x=>x.classList.remove('on')); f.classList.add('on');
   }));
+
+  // multi-select chips (injuries) — "None" is exclusive
+  document.querySelectorAll('[data-multi]').forEach(group=>{
+    group.querySelectorAll('.fchip').forEach(chip=>chip.addEventListener('click',()=>{
+      const isNone = chip.textContent.trim()==='None';
+      if(isNone){ group.querySelectorAll('.fchip').forEach(x=>x.classList.remove('on')); chip.classList.add('on'); return; }
+      const none=[...group.querySelectorAll('.fchip')].find(x=>x.textContent.trim()==='None'); if(none) none.classList.remove('on');
+      chip.classList.toggle('on');
+    }));
+  });
 
   let curSet=3;
   function logSet(){
