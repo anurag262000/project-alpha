@@ -4,7 +4,7 @@
     {
       "name": "prototype",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["prototype/server.js", "4173"],
+      "runtimeArgs": ["design/prototype/server.js", "4173"],
       "port": 4173
     }
   ]
