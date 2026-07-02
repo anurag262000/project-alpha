@@ -16,4 +16,11 @@ Personal-use first, structured to be Play-Store-ready later.
 - [docs/04-home-logging-ux.md](docs/04-home-logging-ux.md) — home screen and workout logging UX
 - [docs/05-design-system.md](docs/05-design-system.md) — visual language: charcoal + liquid glass, red/green signal colors, tokens, components
 
+## Prototype
+
+- [prototype/index.html](prototype/index.html) — self-contained clickable UI
+  prototype of all four screens (Home, Logging, Onboarding, Progress) in the
+  light liquid-glass style. Open the file directly in a browser, or run
+  `npx serve prototype` and visit the shown URL.
+
 No app code yet — this repo currently holds the planning/design phase.
