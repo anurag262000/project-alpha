@@ -2,14 +2,17 @@
 
 ## Direction
 
-Light, airy, premium. Soft warm-gray canvas with floating white cards and
-soft shadows (depth from elevation, not translucency). Minimal line icons,
-generous rounding. **Near-black ("ink") is the emphasis/selection color**;
-red and green are reserved strictly as data signal.
+Light, airy, premium **liquid glass**. Soft warm-gray canvas carrying faint
+red/green ambient light, with frosted translucent white panels floating over
+it. Depth comes from the glass material (blur + translucency + inset sheen),
+not flat fills. Minimal line icons, generous rounding. **Near-black ("ink")
+is the emphasis/selection color**; red and green are reserved strictly as
+data signal.
 
-Inspiration: light, floating-panel navigation UIs — white cards on a soft
-gray canvas, a black high-contrast pill for the selected item, minimal
-outline icons.
+The light navigation-UI reference informed only the *palette direction*
+(light gray + white, black high-contrast selection, minimal outline icons) —
+the surfaces themselves are liquid glass, not solid cards. The glass must sit
+over colored ambient light to actually read as glass.
 
 > Note: an earlier exploration used a dark charcoal + liquid-glass theme.
 > That direction is archived below for reference — the light system above is
@@ -49,21 +52,35 @@ gray.
 Accent tints: red `rgba(251,44,54,0.12–0.18)`, green
 `rgba(16,185,129,0.12–0.18)`.
 
-## Elevation (the "floating card" recipe)
+## Material (the liquid-glass recipe)
 
-Depth comes from soft shadows on white cards over the mist canvas — no
-borders needed on cards.
+Surfaces are frosted glass, not solid cards. They need colored ambient light
+behind them to read as glass.
 
 ```
-background: #FFFFFF;
-border-radius: 18px;                 /* 16–18 cards, 20–22 large panels/nav */
-box-shadow: 0 8px 22px rgba(20,20,25,0.07);
+background: rgba(255,255,255,0.50);          /* 0.45–0.55 depending on contrast need */
+backdrop-filter: blur(28px) saturate(1.5);
+border: 1px solid rgba(255,255,255,0.60);    /* light catches the top edge */
+border-radius: 18px;                          /* 16–18 cards, 20–22 panels/nav */
+box-shadow: 0 8px 24px rgba(30,32,40,0.09), inset 0 1px 1px rgba(255,255,255,0.85);
 ```
 
-- Small chips/pills: `0 4px 14px rgba(20,20,25,0.07)`.
-- Ink primary button: `0 8px 20px rgba(20,20,25,0.22)`.
-- Green button: `0 8px 20px rgba(16,185,129,0.30)`.
-- Bottom nav: white card floated 12px off the bottom edge, radius 20px.
+- **Ambient light**: soft blurred red/green blobs (opacity ~0.10–0.13,
+  `blur(50px)`) placed behind the glass on each screen so the frost picks up
+  color. Red biased toward action/intensity zones, green toward
+  progress/summary zones.
+- Canvas: `mist #E6E7EA`.
+- Solid (non-glass) elements — ink primary button, red/green buttons,
+  selected ink cards, the scroll-dial center band — stay opaque for contrast
+  and affordance; only *surfaces/containers* are glass.
+- Ink primary button shadow: `0 8px 20px rgba(20,20,25,0.24)`.
+- Green button shadow: `0 8px 20px rgba(16,185,129,0.30)`.
+- Bottom nav: glass bar floated 12px off the bottom edge, radius 20px.
+
+Note: Figma supports this via a **layer/background blur** effect on a
+semi-transparent white fill; the ambient blobs become blurred ellipses on a
+layer beneath. Native RN implementation uses `expo-blur` (`BlurView`) or
+`@react-native-community/blur` for the frosted surfaces.
 
 ## Typography
 
