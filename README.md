@@ -14,5 +14,6 @@ Personal-use first, structured to be Play-Store-ready later.
 - [docs/02-split-generator-logic.md](docs/02-split-generator-logic.md) — rule-based program generation
 - [docs/03-onboarding-flow.md](docs/03-onboarding-flow.md) — onboarding screens
 - [docs/04-home-logging-ux.md](docs/04-home-logging-ux.md) — home screen and workout logging UX
+- [docs/05-design-system.md](docs/05-design-system.md) — visual language: charcoal + liquid glass, red/green signal colors, tokens, components
 
 No app code yet — this repo currently holds the planning/design phase.
