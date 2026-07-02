@@ -23,8 +23,30 @@ The single local user (no multi-account needed for local-only MVP).
 | days_per_week | int | |
 | session_length_min | int | |
 | equipment_access | enum: home_minimal / home_full / gym | filters exercise selection |
-| injuries | text[] (tags) | excludes movement patterns |
+| injuries | text[] (tags) | excludes movement patterns (see [06 §7](06-health-calculations.md#7-injury--movement-exclusion-map)) |
+| activity_level | enum: sedentary / light / moderate / very / extra | lifestyle NEAT → TDEE multiplier |
+| training_days | weekday[] | specific days chosen (not just a count); `days_per_week` derives from length |
+| preferred_time | enum: morning / midday / evening / flexible | reminders + fasted-training context |
+| preferred_time_specific | time, nullable | optional exact time |
+| target_weight_kg | number, nullable | progressive; goal projection + target sanity-check |
+| dietary_pattern | enum: omnivore / vegetarian / vegan / other, nullable | progressive; food guidance |
+| allergies | text[] (tags), nullable | progressive |
+| cal_checkin_enabled | boolean | whether daily calorie check-in is on |
 | created_at / updated_at | timestamp | |
+
+**Cached derived targets** (recomputed on weight/activity/goal change; stored
+on the profile for cheap reads — formulas in [06-health-calculations.md](06-health-calculations.md)):
+
+| Field | Type | Notes |
+|---|---|---|
+| bmr_kcal | number | Mifflin-St Jeor |
+| tdee_kcal | number | BMR × activity multiplier |
+| calorie_target_kcal | number | TDEE adjusted by goal, with safety floor |
+| protein_g / fat_g / carb_g | number | macro split |
+| targets_computed_at | timestamp | when the cache was last refreshed |
+
+(BMI is derived per `BodyMeasurement` — see below — not cached on the profile,
+so the whole BMI trend is chartable.)
 
 ### BodyMeasurement (time series, 1-to-many from UserProfile)
 Captures the "estimated vs accurate" distinction the user wants — a rough
@@ -40,7 +62,39 @@ accurate one.
 | body_fat_pct | number, nullable | |
 | waist_cm / chest_cm / arm_cm | number, nullable | optional detailed measurements |
 | accuracy | enum: estimated / measured | flags confidence for the algorithm and charts |
+| bmi | number (derived) | computed from weight + profile.height_cm at write time; stored so the BMI trend is chartable |
 | source | enum: manual / synced | room for future scale integration |
+
+### HealthScreening (1-to-1 with UserProfile)
+PAR-Q+ style readiness screen plus stored medical context. Drives the safety
+disclaimer and intensity-prescription notes — see
+[06 §8](06-health-calculations.md#8-health-readiness-par-q-style--medical-disclaimer).
+
+| Field | Type | Notes |
+|---|---|---|
+| id | uuid | |
+| profile_id | fk | |
+| parq_answers | bool[7] | the 7 readiness questions |
+| any_flag | boolean (derived) | true if any parq answer is yes → recommend clearance |
+| conditions | text[] (tags), nullable | e.g. hypertension, cardiac, diabetes, pregnancy |
+| medications | text[] (tags), nullable | affects intensity prescription (e.g. beta-blockers → RPE not HR) |
+| cleared_by_physician | boolean | user acknowledgement / clearance state |
+| screened_at | timestamp | |
+
+### CalorieCheckin (time series, 1-to-many from UserProfile)
+Phase-1 nutrition: one daily number vs the calorie target. Designed so a
+future full food log rolls up into the same row (see
+[06 §6](06-health-calculations.md#6-calorie-check-in-nutrition-phase-1)).
+
+| Field | Type | Notes |
+|---|---|---|
+| id | uuid | |
+| profile_id | fk | |
+| date | date | |
+| calories_consumed | int | the daily total the user logs |
+| protein_g | int, nullable | optional protein number |
+| target_snapshot_kcal | int | the calorie target on that day (so adherence stays accurate as targets change) |
+| source | enum: manual / food_log | `food_log` reserved for the future itemized log |
 
 ### Exercise (seeded, read-mostly)
 

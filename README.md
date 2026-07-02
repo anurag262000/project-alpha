@@ -19,7 +19,8 @@ project-alpha/
 │   ├── 01-data-model.md     entities & relationships
 │   ├── 02-split-generator-logic.md   rule-based program generation
 │   ├── 03-onboarding-flow.md         onboarding screens, step by step
-│   └── 04-home-logging-ux.md         home screen + scroll-dial logging
+│   ├── 04-home-logging-ux.md         home screen + scroll-dial logging
+│   └── 06-health-calculations.md     BMI/BMR/TDEE, macros, PAR-Q, injury map
 ├── design/              how it looks & feels
 │   ├── design-system.md     canonical visual language (light glass, tokens)
 │   ├── design-log.md        dated design decisions + reasoning
@@ -36,6 +37,7 @@ project-alpha/
 | See the data model | [docs/01-data-model.md](docs/01-data-model.md) |
 | Understand how programs are generated | [docs/02-split-generator-logic.md](docs/02-split-generator-logic.md) |
 | Read onboarding / logging UX specs | [docs/03-onboarding-flow.md](docs/03-onboarding-flow.md), [docs/04-home-logging-ux.md](docs/04-home-logging-ux.md) |
+| Understand the health/nutrition math | [docs/06-health-calculations.md](docs/06-health-calculations.md) |
 | Know the colors, tokens, components | [design/design-system.md](design/design-system.md) |
 | Understand *why* the design looks this way | [design/design-log.md](design/design-log.md) |
 | Click through the UI | [design/prototype/](design/prototype/) (see below) |

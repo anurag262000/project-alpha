@@ -6,19 +6,30 @@ Status legend: `planned` · `prototyped` · `in-dev` · `shipped`.
 ---
 
 ## F1 — Onboarding & profile
-**Status:** prototyped
-**Spec:** [../docs/03-onboarding-flow.md](../docs/03-onboarding-flow.md)
+**Status:** planned (spec complete)
+**Spec:** [../docs/03-onboarding-flow.md](../docs/03-onboarding-flow.md) ·
+[../docs/06-health-calculations.md](../docs/06-health-calculations.md)
 
-**Current requirement:** Multi-step onboarding capturing sex, DOB, height,
-weight (with estimated/measured accuracy flag), goal, experience level,
-training days + session length, equipment access, and optional
-injuries/limitations. Ends by generating a program. All feeds the profile the
-algorithm and progress charts read from.
+**Current requirement:** Core-first onboarding that captures the "coach's
+checklist": sex, DOB, height, weight (estimated/measured flag, live auto-BMI),
+goal, experience, lifestyle activity (NEAT), weekly availability (specific
+days + preferred time-of-day + session length), equipment, PAR-Q+ readiness
+screen, and injuries. On completion it generates the split, computes
+BMI/BMR/TDEE + calorie & macro targets, and seeds progress baselines.
+Remaining data (detailed measurements, meds/conditions detail, dietary
+preferences, target weight, calorie check-in) is gathered progressively from
+Profile → "Complete your profile".
 
 **Mutations:**
-- 2026-07-02 — Established as 8-ish steps; weight carries an
-  estimated-vs-measured toggle (user's explicit ask) so early data can be
-  weighted appropriately.
+- 2026-07-02 — Established as ~8 steps; weight carries estimated/measured
+  toggle so early data can be weighted appropriately.
+- 2026-07-02 — Expanded to full coach-grade intake: added lifestyle activity
+  level, preferred training time-of-day, PAR-Q+ readiness screen, auto-BMI,
+  and derived nutrition targets. Adopted **core-first + progressive** strategy
+  to limit sign-up drop-off. Injuries now **actively modify** the generated
+  split (exclusion map in [06 §7](../docs/06-health-calculations.md#7-injury--movement-exclusion-map));
+  medical/meds stored + safety disclaimer. Reason: onboarding is the base of
+  the whole app — the plan and targets are only as good as this intake.
 
 **Bugs:** none yet.
 
@@ -118,6 +129,27 @@ toggle. Ink neutral emphasis (inverts in dark), red/green as data signal only.
 - 2026-07-02 — Direction went dark charcoal → light → light liquid glass;
   then dark mode re-added as a second theme. See
   [../design/design-log.md](../design/design-log.md).
+
+**Bugs:** none yet.
+
+---
+
+## F8 — Nutrition: targets + calorie check-in
+**Status:** planned
+**Spec:** [../docs/06-health-calculations.md](../docs/06-health-calculations.md)
+
+**Current requirement:** Derive and display BMI, BMR, TDEE, and daily calorie
++ macro targets from the profile (formulas per doc 06), recomputed on
+weight/activity/goal change. Provide a lightweight daily **calorie check-in**
+(single calories-eaten number, optional protein) charted vs target with
+adherence %.
+
+**Mutations:**
+- 2026-07-02 — Created. Reverses the earlier "nutrition out of scope" stance.
+  Scope decision: **phase 1 = targets + calorie check-in**; a full itemized
+  food log is a **future update** (goal state). `CalorieCheckin` is modeled so
+  the future food log rolls up into the same daily row without a schema
+  rewrite.
 
 **Bugs:** none yet.
 

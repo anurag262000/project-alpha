@@ -1,80 +1,131 @@
 # Onboarding Flow
 
-## Ordering principle
+Onboarding is the foundation of the whole app: it builds the profile that the
+split generator, the calorie/macro targets, and every progress chart read
+from. Get this right and everything downstream has good inputs; get it wrong
+and no algorithm can compensate.
 
-Ask for identity/measurement data first (needed as a baseline before anything
-else makes sense), then goal (because it reframes how later questions should
-be interpreted), then the constraints that gate the algorithm
-(availability/equipment), and exceptions (injuries) last since they're
-filters applied on top of an otherwise-complete picture.
+See [06-health-calculations.md](06-health-calculations.md) for the formulas
+and coaching logic behind the numbers captured here.
 
-## Screens
+## Strategy: core-first, then progressive
+
+We collect a lot (stats, activity, diet, injuries, meds, weekly availability),
+so we split it in two to minimize sign-up drop-off:
+
+- **Core onboarding** — the minimum needed to (a) generate a first program and
+  (b) compute calorie/macro targets safely. Required, done once up front.
+- **Progressive enrichment** — everything else, offered afterward from
+  Profile → "Complete your profile". Optional; each addition unlocks more
+  (more chart dimensions, diet check-in, refined targets).
+
+The user reaches a working plan fast, then deepens the profile at their pace.
+
+---
+
+## Core onboarding — screens
+
+All numeric entry uses the scroll-dial component (learned here, reused in
+workout logging). Units toggle (metric/imperial) available on measurement
+screens; stored canonically in metric.
 
 ### 1. Welcome
-Brief framing of what the app does and that it will ask a few questions to
-build a program — sets expectation that this isn't just a tracker.
+What the app does; sets expectation that a few questions build a real program,
+not just a tracker.
 
 ### 2. Basic info
-- Sex (for volume/heuristic defaults)
-- Date of birth
-- Height (scroll-dial input, cm/ft-in toggle)
-- Weight (scroll-dial input, kg/lb toggle)
-- **Estimated vs. Measured** toggle on weight — required field, but honesty
-  about precision is captured explicitly, per the user's original ask, so
-  the algorithm and progress charts can weight early data appropriately.
+- Sex (drives BMR formula and default heuristics)
+- Date of birth (age)
+- One screen, both required.
 
-### 3. Optional detailed measurements (skippable)
-Waist / chest / arm measurements. Explicitly optional — skipping doesn't
-block program generation, just means fewer chart dimensions later.
+### 3. Measurements → live BMI
+- Height, Weight (scroll-dial, unit toggle)
+- Weight carries an **estimated / measured** flag (confidence for the
+  algorithm and charts).
+- **Auto BMI**: computed live from height + weight, shown with its category
+  and the "muscle mass caveat" note. Stored on the first `BodyMeasurement`.
 
 ### 4. Goal
-Single-select: fat loss / muscle gain / recomp / general fitness. One
-required answer — this is the single input with the most influence over
-rep ranges and volume bias (see [02-split-generator-logic.md](02-split-generator-logic.md)).
+Fat loss / muscle gain / recomp / general fitness. Single most influential
+input — sets calorie direction and rep/volume bias.
 
 ### 5. Experience level
-new / under 1 year / 1–3 years / 3+ years of consistent resistance training.
-Self-reported; drives whether the generator biases toward MEV or MAV and
-which split templates are eligible.
+New / under 1 yr / 1–3 yr / 3+ yr. Sets starting volume (MEV vs MAV) and
+eligible split templates.
 
-### 6. Availability
-- Days per week (multi-select specific weekdays, not just a count — lets the
-  generator pin `ProgramDay.weekday` directly)
-- Session length (scroll-dial, minutes)
+### 6. Lifestyle activity (NEAT)
+How active is daily life *outside* training: sedentary desk / lightly active /
+active / very active job. Feeds the TDEE multiplier
+([06 §3](06-health-calculations.md#3-tdee-total-daily-energy-expenditure)).
 
-### 7. Equipment access
-home_minimal / home_full / gym — single select. Directly filters the
-`Exercise` pool in Step 3 of the generator.
+### 7. Weekly availability
+- **Training days**: pick specific weekdays (not just a count) so the
+  generator can pin days.
+- **Preferred time of day**: morning / midday / evening / flexible, with an
+  optional specific time (used for reminders and, later, fasted-training
+  notes).
+- **Session length**: minutes (scroll-dial / slider).
 
-### 8. Injuries / limitations (optional)
-Checklist of common areas (shoulder, lower back, knee, wrist, hip, elbow)
-plus free-text notes. Optional but flagged clearly as affecting exercise
-selection — skipping just means no exclusions applied.
+### 8. Equipment access
+Home minimal / home full / full gym. Filters the exercise pool.
 
-### 9. Review summary
-Single screen recapping all entered values with edit-in-place links back to
-each screen — no silent assumptions, user sees exactly what will be fed into
-generation before it runs.
+### 9. Health & readiness
+- **PAR-Q+ short screen** (7 yes/no). Any "yes" → recommend physician
+  clearance before starting; user acknowledges and may proceed
+  ([06 §8](06-health-calculations.md#8-health-readiness-par-q-style--medical-disclaimer)).
+- **Injuries / limitations**: checklist (shoulder, lower back, knee, wrist,
+  elbow, hip) + free text. These actively exclude movements from the generated
+  split.
+- Medical disclaimer shown here.
 
-### 10. Program generation
-Loading state while the split-generator runs, followed by a short explanation
-screen: which template was chosen and why (e.g. "4 days/week, 1+ year
-experience → Upper/Lower with strength/hypertrophy split"), before handing
-off to the Home screen with Day 1 populated and ready to log.
+### 10. Review
+Recap of all core inputs with edit-in-place links. No silent assumptions —
+the user sees exactly what feeds generation.
 
-## Input pattern note
+### 11. Plan ready + your numbers
+- Generated split summary (template + why it was chosen).
+- **Your daily targets**: calorie target + protein/fat/carb macros, plus BMI
+  and TDEE, explained in one line each.
+- Prompt: "Complete your profile" → progressive enrichment (skippable).
 
-All numeric entry (height, weight, session length) uses the scroll-dial
-component from the start of onboarding, so the user learns the interaction
-pattern before reaching in-workout logging, where the same component is used
-for weight/reps/sets (see [04-home-logging-ux.md](04-home-logging-ux.md)).
-Consistency here is deliberate — one interaction to learn, reused everywhere.
+---
 
-## Validation
+## Progressive enrichment — later, from Profile
 
-- Required: sex, DOB, height, weight, goal, experience, ≥1 day/week,
-  session length, equipment access.
-- Optional: detailed measurements, injuries/limitations.
-- No field blocks progress except the required set above — optional fields
-  degrade gracefully (fewer chart dimensions or no exclusions), they never
-  block generation.
+Offered after onboarding; none of it blocks a working plan.
+
+| Item | Unlocks |
+|---|---|
+| Detailed measurements (waist / chest / arm, body-fat %) | More progress-chart dimensions; leaner protein targeting if body-fat known |
+| Target weight + timeline | Progress-to-goal projection; sanity-checks the calorie target's aggressiveness |
+| Medications & conditions detail | Fuller safety context; intensity-by-RPE note when relevant (e.g. beta-blockers) |
+| Dietary pattern & allergies (omnivore / veg / vegan; allergens) | Tailored food guidance; foundation for the future food log |
+| Enable calorie check-in | Daily calories-eaten logging charted vs target (phase-1 nutrition) |
+
+---
+
+## Required vs optional (validation)
+
+- **Required (core):** sex, DOB, height, weight, goal, experience, lifestyle
+  activity, ≥1 training day, session length, preferred time, equipment,
+  PAR-Q answers. Injuries optional but prompted.
+- **Optional (progressive):** everything in the enrichment table. Degrades
+  gracefully — fewer chart dimensions or no exclusions, never a block.
+
+## What onboarding produces
+
+On completion the app has enough to immediately:
+
+1. **Generate the split** — goal + experience + days + time + equipment +
+   injuries → program (see [02-split-generator-logic.md](02-split-generator-logic.md)).
+2. **Compute nutrition targets** — stats + activity + goal → BMI, BMR, TDEE,
+   calorie + macro targets (see [06-health-calculations.md](06-health-calculations.md)).
+3. **Seed progress baselines** — first `BodyMeasurement` (with BMI) as the
+   zero point every future chart compares against.
+
+## Data written
+
+See [01-data-model.md](01-data-model.md) for the schema. Onboarding writes:
+`UserProfile`, the first `BodyMeasurement`, `HealthScreening`, and the cached
+derived targets on the profile. Progressive enrichment updates the same
+`UserProfile` and adds `CalorieCheckin` rows once enabled.

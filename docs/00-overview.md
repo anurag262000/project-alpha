@@ -56,12 +56,15 @@ active data against your goal.
 - [03-onboarding-flow.md](03-onboarding-flow.md) — screen-by-screen onboarding
 - [04-home-logging-ux.md](04-home-logging-ux.md) — home screen and scroll-dial
   logging interaction
+- [06-health-calculations.md](06-health-calculations.md) — BMI/BMR/TDEE, macro
+  targets, PAR-Q screening, injury→exclusion map
 
 ## Open questions (not yet decided)
 
-- Nutrition/calorie tracking — explicitly out of scope for now; goal
-  (fat loss/muscle gain) currently only affects training volume/rep ranges,
-  not diet.
+- Nutrition/calorie tracking — **now in scope** (decided 2026-07-02).
+  Phase 1 = derived calorie/macro targets + a daily calorie check-in; a full
+  itemized food log is a future update. See
+  [06-health-calculations.md](06-health-calculations.md) and feature F8.
 - Multi-device sync — deferred until local-only MVP is validated.
 - iOS support — Expo keeps this open later, but Health Connect is Android-only,
   so steps tracking would need an Apple Health equivalent if pursued.
