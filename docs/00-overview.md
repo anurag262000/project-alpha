@@ -1,0 +1,67 @@
+# Project Alpha — Fitness & Training App
+
+## The gap this fills
+
+Google Fit (and phone/wearable OEM apps) track *passive* activity — steps, heart
+rate, calories burned. Fitness bands surface their own siloed metrics. Neither
+plans or tracks *structured resistance training* — what split you're on, what
+you lifted today, whether you're progressing. Apps that do log workouts
+(Strong, Hevy) don't plan the split for you or connect it to your passive
+activity data. This app is the bridge: one place that plans a program from
+your actual constraints, tracks what you did, and shows both passive and
+active data against your goal.
+
+## Core pillars
+
+1. **Passive tracking** — steps/activity via Android Health Connect (the
+   successor to the Google Fit API).
+2. **Active tracking** — sets/reps/weight actually logged, which no passive
+   tracker captures.
+3. **Planning** — a split generated from goal, days/week, session length, and
+   equipment access, not chosen from a generic template list.
+4. **Feedback loop** — profile + logs → charts that show whether the plan is
+   working, and progression rules that adjust the next session.
+
+## Tech stack decisions
+
+| Decision | Choice | Why | Alternatives considered |
+|---|---|---|---|
+| Framework | React Native (Expo) | User's preferred stack; Expo's config-plugin system still allows native modules (e.g. Health Connect) without going bare, and gives fast iteration + EAS builds for Play Store. | Flutter (better default charting/animation, but user prefers RN), native Kotlin (best Health Connect access, single-platform only, more code) |
+| Local data | SQLite via Drizzle ORM | Typed schema + migrations, good fit for relational workout data (profile → program → sessions → sets), fully on-device. | WatermelonDB (better for reactive sync, overkill with no backend), raw expo-sqlite (no type safety) |
+| Backend | None (local-only) | Personal-use first; no auth/server complexity needed until multi-device sync is actually wanted. | Firebase/Supabase from day one — deferred, not ruled out |
+| Steps/activity source | Android Health Connect | Google Fit's tracking APIs are being folded into Health Connect; building on the old API is a dead end. | Direct Google Fit REST API (deprecated path) |
+| Navigation | React Navigation | Standard, well-supported in Expo. | — |
+| State | Zustand | Minimal boilerplate for a single-user local app. | Redux Toolkit (more ceremony than needed here) |
+| Charts | react-native-gifted-charts | Covers line/bar charts needed for weight trend, volume, adherence. | Victory Native |
+| Exercise library seed | Open dataset (see [01-data-model.md](01-data-model.md)) | Don't hand-author hundreds of exercises; seed from an existing open, licensable dataset and curate. | Hand-curated from scratch (slow, error-prone) |
+
+## Staged roadmap
+
+- **Stage 1 — Onboarding & Profile**: capture the inputs the algorithm needs.
+- **Stage 2 — Exercise Library**: seeded, filterable by muscle group/equipment.
+- **Stage 3 — Program Generator**: rule-based split + exercise + volume
+  assignment (see [02-split-generator-logic.md](02-split-generator-logic.md)).
+- **Stage 4 — Home Screen & Logging**: today's workout, scroll-dial input
+  (see [04-home-logging-ux.md](04-home-logging-ux.md)).
+- **Stage 5 — Progress & Analytics**: steps/points, weight trend, volume per
+  muscle group, PR tracking, adherence.
+- **Stage 6 — Integrations & Play Store readiness**: Health Connect wiring,
+  privacy policy, Play Data Safety form, optional cloud sync/auth.
+
+## Section docs
+
+- [01-data-model.md](01-data-model.md) — entities and relationships
+- [02-split-generator-logic.md](02-split-generator-logic.md) — the rule-based
+  algorithm and its rationale
+- [03-onboarding-flow.md](03-onboarding-flow.md) — screen-by-screen onboarding
+- [04-home-logging-ux.md](04-home-logging-ux.md) — home screen and scroll-dial
+  logging interaction
+
+## Open questions (not yet decided)
+
+- Nutrition/calorie tracking — explicitly out of scope for now; goal
+  (fat loss/muscle gain) currently only affects training volume/rep ranges,
+  not diet.
+- Multi-device sync — deferred until local-only MVP is validated.
+- iOS support — Expo keeps this open later, but Health Connect is Android-only,
+  so steps tracking would need an Apple Health equivalent if pursued.
