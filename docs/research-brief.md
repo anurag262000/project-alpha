@@ -26,8 +26,9 @@ recorded decision without flagging it.
 - State assumptions explicitly and call out what you're unsure about.
 - Prefer the project's existing stack (Expo, expo-router, SQLite/Drizzle,
   Zustand) unless there's a strong reason to deviate — and if so, say why.
-- Keep the app's constraints in mind: local-only for now, personal-use first,
-  Play-Store-ready later, light-liquid-glass design.
+- Keep the app's constraints in mind: fitness data is on-device (SQLite) for
+  now; a Cloudflare Workers backend exists for **accounts only** (see ADR-001);
+  personal-use first, Play-Store-ready later, light-liquid-glass design.
 
 **Output decisions in a ready-to-commit format:** when a decision is reached,
 write it as an ADR using the template in `docs/07-architecture.md`

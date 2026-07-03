@@ -28,7 +28,7 @@ active data against your goal.
 |---|---|---|---|
 | Framework | React Native (Expo) | User's preferred stack; Expo's config-plugin system still allows native modules (e.g. Health Connect) without going bare, and gives fast iteration + EAS builds for Play Store. | Flutter (better default charting/animation, but user prefers RN), native Kotlin (best Health Connect access, single-platform only, more code) |
 | Local data | SQLite via Drizzle ORM | Typed schema + migrations, good fit for relational workout data (profile → program → sessions → sets), fully on-device. | WatermelonDB (better for reactive sync, overkill with no backend), raw expo-sqlite (no type safety) |
-| Backend | None (local-only) | Personal-use first; no auth/server complexity needed until multi-device sync is actually wanted. | Firebase/Supabase from day one — deferred, not ruled out |
+| Backend | Cloudflare Workers + D1 (auth only) | Real accounts now wanted; one worker per service, starting with `auth-worker`. Reverses the earlier local-only stance — see [ADR-001](07-architecture.md#adr-001--backend-for-accounts-cloudflare-workers--d1-auth-first). DB choice still being tested. | Local-only (superseded); Firebase/Supabase (extra vendor) |
 | Steps/activity source | Android Health Connect | Google Fit's tracking APIs are being folded into Health Connect; building on the old API is a dead end. | Direct Google Fit REST API (deprecated path) |
 | Navigation | React Navigation | Standard, well-supported in Expo. | — |
 | State | Zustand | Minimal boilerplate for a single-user local app. | Redux Toolkit (more ceremony than needed here) |
@@ -46,7 +46,12 @@ active data against your goal.
 - **Stage 5 — Progress & Analytics**: steps/points, weight trend, volume per
   muscle group, PR tracking, adherence.
 - **Stage 6 — Integrations & Play Store readiness**: Health Connect wiring,
-  privacy policy, Play Data Safety form, optional cloud sync/auth.
+  privacy policy, Play Data Safety form.
+
+Accounts (email/password signup + login) are handled by a Cloudflare Workers
+backend — see [07-architecture.md ADR-001](07-architecture.md#adr-001--backend-for-accounts-cloudflare-workers--d1-auth-first)
+and feature F8/F9 in [feature-log](../features/feature-log.md). Syncing
+on-device fitness data to that backend is a separate, still-open question.
 
 ## Section docs
 
@@ -65,6 +70,8 @@ active data against your goal.
   Phase 1 = derived calorie/macro targets + a daily calorie check-in; a full
   itemized food log is a future update. See
   [06-health-calculations.md](06-health-calculations.md) and feature F8.
-- Multi-device sync — deferred until local-only MVP is validated.
+- Multi-device sync of fitness data — deferred. Accounts now exist (Cloudflare
+  backend, auth only), but syncing the on-device profile/logs up to the server
+  is not yet designed.
 - iOS support — Expo keeps this open later, but Health Connect is Android-only,
   so steps tracking would need an Apple Health equivalent if pursued.

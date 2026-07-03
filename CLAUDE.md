@@ -11,11 +11,13 @@ Connect) with planned, adaptive resistance-training programs and workout
 logging — the gap between Google Fit and single-purpose workout loggers.
 Personal-use first, structured to be Play-Store-ready later.
 
-- **Stack:** React Native (Expo, expo-router, TypeScript), local-only
-  (SQLite + Drizzle). State: Zustand. No backend yet.
-- **Status:** planning + design + a UI prototype are done. The RN app in
-  `mobile/` is **UI-only** — data/calc/DB are intentionally not wired yet
-  (architecture is being decided).
+- **Stack:** React Native (Expo, expo-router, TypeScript). App data on-device
+  (SQLite + Drizzle), state via Zustand. Backend: Cloudflare Workers + D1 for
+  **accounts only** (`backend/auth-worker/`) — see ADR-001.
+- **Status:** planning + design + UI prototype done. The RN app in `mobile/`
+  is mostly **UI-only** (data/calc/DB not wired yet), except **auth**, which is
+  wired to the Cloudflare worker (signup/login/session). Backend is built +
+  tested locally, not yet deployed.
 
 ## Where things live (source of truth = this repo)
 
@@ -24,7 +26,11 @@ Personal-use first, structured to be Play-Store-ready later.
   onboarding, 04 home-logging, 06 health-calculations, 07 architecture.
 - `design/` — design-system.md, design-log.md, and the HTML prototype.
 - `features/feature-log.md` — per-feature requirements, mutations, and bugs.
+- `docs/flow-diagrams/` — one Mermaid diagram per *finalized* feature.
+- `docs/learning/` — teaching notes we record while learning a tool/process
+  (e.g. Cloudflare Workers deploy), for future reference.
 - `mobile/` — the Expo app (UI prototype).
+- `backend/` — Cloudflare Workers, one directory per service (`auth-worker/`).
 
 ## Conventions (please follow)
 
@@ -33,6 +39,8 @@ Personal-use first, structured to be Play-Store-ready later.
   `features/feature-log.md`; never overwrite. Bugs go in the same file.
 - **Architecture decisions** → record as an ADR entry in
   `docs/07-architecture.md`.
+- **Flow changes** → once a feature is finalized, keep a Mermaid diagram in
+  `docs/flow-diagrams/` and update it whenever the flow changes.
 - **Design language:** light liquid glass (canonical) + dark mode. Ink =
   neutral emphasis (inverts in dark); red = drive/intensity, green =
   progress/done — used only as data signal. Details in

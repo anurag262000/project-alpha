@@ -88,7 +88,7 @@ export default function Ready() {
         </Glass>
       </ScrollView>
       <View style={{ paddingTop: 12 }}>
-        <PrimaryButton label="Start training" onPress={() => router.replace('/home')} />
+        <PrimaryButton label="Start training" onPress={() => router.push('/onboarding/account')} />
       </View>
     </Screen>
   );

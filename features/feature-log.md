@@ -155,6 +155,27 @@ adherence %.
 
 ---
 
+## F9 — Auth (signup / login)
+**Status:** prototyped
+**Spec:** [../docs/07-architecture.md#adr-001](../docs/07-architecture.md) ·
+[../docs/flow-diagrams/auth.md](../docs/flow-diagrams/auth.md)
+
+**Current requirement:** Email/password signup and login backed by a
+Cloudflare Worker (`backend/auth-worker/`) over D1. Signup step sits at the end
+of onboarding (after "Plan ready"); returning users log in from Welcome.
+Opaque bearer-token session stored in `expo-secure-store`, restored on launch.
+
+**Mutations:**
+- 2026-07-03 — Created. Reverses the earlier local-only stance (00-overview
+  "Backend: None"). Reason: real accounts are wanted now. Scope is **auth
+  only** — creating an account + session. Syncing the local `UserProfile` to
+  the backend is deliberately **out of scope** (still open question #1 in the
+  architecture doc). DB is D1 as a first pick under test, not locked.
+
+**Bugs:** none yet.
+
+---
+
 ## Global bug log
 
 | # | Date | Area | Description | Status | Fix |
