@@ -57,4 +57,33 @@ Architecture Decision Records — newest first. Copy the template per decision.
 - Alternatives considered: <options rejected and why>
 ```
 
-_(No ADRs recorded yet — this is where the architecture research lands.)_
+### ADR-001 — Backend for accounts: Cloudflare Workers + D1 (auth first)
+- Date: 2026-07-03
+- Status: **proposed** (implementing + testing; DB choice not locked)
+- Context: The app was local-only (see 00-overview "Backend: None"). We now
+  want real user accounts (email/password signup + login). This needs a
+  server and a place to store credentials, which local-only can't provide.
+- Decision:
+  - **Compute:** Cloudflare Workers, **one worker per service**. First and
+    only one today: `auth-worker` (`backend/auth-worker/`). More services get
+    added as sibling workers under `backend/`.
+  - **Database:** Cloudflare **D1** (SQLite) — native Worker binding, no extra
+    vendor, free tier, and the same Drizzle+SQLite model the mobile app
+    already uses. **This is a first pick we're testing, not final** — if it
+    doesn't hold up we swap it and supersede this ADR.
+  - **Sessions:** opaque random bearer token stored in a `sessions` table,
+    kept in `expo-secure-store` on device. Revocable by deleting the row
+    (vs a stateless JWT). 30-day expiry.
+  - **Passwords:** PBKDF2-SHA256 via the Workers Web Crypto API (bcrypt/argon2
+    need native bindings Workers doesn't have), per-user salt, 100k iterations.
+  - **Flow placement:** account step sits **after** core onboarding
+    ("Plan ready") so the whole intake works offline first; returning users
+    log in from the Welcome screen.
+- Consequences: introduces a backend and network dependency for auth; app can
+  no longer be purely offline for first-run account creation. Syncing the
+  local `UserProfile` to the backend is **out of scope here** — still open
+  question #1 below.
+- Alternatives considered: stateless JWT (rejected — can't revoke before
+  expiry without a blocklist); Supabase/Firebase (rejected — extra vendor, the
+  user chose Cloudflare Workers); Turso/other SQLite hosts (deferred — D1 is
+  the zero-extra-vendor option to test first).

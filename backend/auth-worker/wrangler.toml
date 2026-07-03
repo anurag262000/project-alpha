@@ -1,0 +1,11 @@
+name = "project-alpha-auth-worker"
+main = "src/index.ts"
+compatibility_date = "2024-11-01"
+
+# Created via `wrangler d1 create project-alpha-auth` — paste the id it
+# returns below. Not created yet; see backend/README.md.
+[[d1_databases]]
+binding = "DB"
+database_name = "project-alpha-auth"
+database_id = "REPLACE_ME_AFTER_WRANGLER_D1_CREATE"
+migrations_dir = "drizzle"

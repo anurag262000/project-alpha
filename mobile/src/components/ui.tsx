@@ -3,10 +3,12 @@ import {
   View,
   Text,
   Pressable,
+  TextInput,
   StyleSheet,
   type ViewStyle,
   type StyleProp,
   type TextStyle,
+  type TextInputProps,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -163,6 +165,42 @@ export function Field({ label, value }: { label: string; value: string }) {
     >
       <Text style={{ fontSize: 14, color: theme.textSecondary }}>{label}</Text>
       <Text style={{ fontSize: 15, fontWeight: '600', color: theme.textPrimary }}>{value}</Text>
+    </View>
+  );
+}
+
+/** Labelled text input on the same soft field surface as `Field`. */
+export function TextField({
+  label,
+  error,
+  style,
+  ...props
+}: {
+  label: string;
+  error?: string;
+  style?: StyleProp<ViewStyle>;
+} & TextInputProps) {
+  const { theme } = useTheme();
+  return (
+    <View style={style}>
+      <Cap style={{ marginBottom: 8, marginLeft: 4 }}>{label}</Cap>
+      <TextInput
+        placeholderTextColor={theme.textMuted}
+        {...props}
+        style={{
+          paddingVertical: 14,
+          paddingHorizontal: 16,
+          borderRadius: 14,
+          backgroundColor: theme.fieldBg,
+          borderWidth: 1,
+          borderColor: error ? theme.red : theme.glassBorder,
+          fontSize: 15,
+          color: theme.textPrimary,
+        }}
+      />
+      {error ? (
+        <Text style={{ fontSize: 12, color: theme.redText, marginTop: 6, marginLeft: 4 }}>{error}</Text>
+      ) : null}
     </View>
   );
 }

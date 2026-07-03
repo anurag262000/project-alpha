@@ -40,7 +40,7 @@ export default function Welcome() {
       </View>
       <View style={{ paddingBottom: 8 }}>
         <PrimaryButton label="Get started" onPress={() => router.push('/onboarding/basics')} />
-        <GhostButton label="I already have an account" onPress={() => router.replace('/')} />
+        <GhostButton label="I already have an account" onPress={() => router.push('/login')} />
       </View>
     </Screen>
   );

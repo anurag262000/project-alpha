@@ -24,7 +24,11 @@ Personal-use first, structured to be Play-Store-ready later.
   onboarding, 04 home-logging, 06 health-calculations, 07 architecture.
 - `design/` — design-system.md, design-log.md, and the HTML prototype.
 - `features/feature-log.md` — per-feature requirements, mutations, and bugs.
+- `docs/flow-diagrams/` — one Mermaid diagram per *finalized* feature.
+- `docs/learning/` — teaching notes we record while learning a tool/process
+  (e.g. Cloudflare Workers deploy), for future reference.
 - `mobile/` — the Expo app (UI prototype).
+- `backend/` — Cloudflare Workers, one directory per service (`auth-worker/`).
 
 ## Conventions (please follow)
 
@@ -33,6 +37,8 @@ Personal-use first, structured to be Play-Store-ready later.
   `features/feature-log.md`; never overwrite. Bugs go in the same file.
 - **Architecture decisions** → record as an ADR entry in
   `docs/07-architecture.md`.
+- **Flow changes** → once a feature is finalized, keep a Mermaid diagram in
+  `docs/flow-diagrams/` and update it whenever the flow changes.
 - **Design language:** light liquid glass (canonical) + dark mode. Ink =
   neutral emphasis (inverts in dark); red = drive/intensity, green =
   progress/done — used only as data signal. Details in

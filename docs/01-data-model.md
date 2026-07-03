@@ -7,10 +7,37 @@ Keep **planned** data (what the program says to do) and **actual** data
 charts, adherence %, and progression rules possible — collapsing them into one
 table would lose the ability to compare intent against reality.
 
-## Entities
+## Backend entities (D1 — `backend/auth-worker/`)
+
+These live server-side in Cloudflare D1, **not** in the on-device SQLite DB.
+They cover accounts only; the fitness data below stays local (profile sync is
+not yet scoped). See [ADR-001](07-architecture.md#adr-001--backend-for-accounts-cloudflare-workers--d1-auth-first).
+
+### User
+| Field | Type | Notes |
+|---|---|---|
+| id | uuid | |
+| email | text (unique) | stored lowercase |
+| password_hash | text | PBKDF2-SHA256, hex |
+| password_salt | text | per-user random salt, hex |
+| created_at | timestamp | |
+
+### Session
+| Field | Type | Notes |
+|---|---|---|
+| token | text (pk) | random 32-byte hex, opaque bearer token |
+| user_id | fk → User | |
+| created_at | timestamp | |
+| expires_at | int (unix secs) | 30-day TTL; delete row to revoke |
+
+---
+
+## Local entities (on-device SQLite)
 
 ### UserProfile
-The single local user (no multi-account needed for local-only MVP).
+The single local user (no multi-account needed for local-only MVP). Distinct
+from the backend `User` above — not yet linked; profile sync is a future,
+separate decision.
 
 | Field | Type | Notes |
 |---|---|---|
