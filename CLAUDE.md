@@ -11,11 +11,13 @@ Connect) with planned, adaptive resistance-training programs and workout
 logging — the gap between Google Fit and single-purpose workout loggers.
 Personal-use first, structured to be Play-Store-ready later.
 
-- **Stack:** React Native (Expo, expo-router, TypeScript), local-only
-  (SQLite + Drizzle). State: Zustand. No backend yet.
-- **Status:** planning + design + a UI prototype are done. The RN app in
-  `mobile/` is **UI-only** — data/calc/DB are intentionally not wired yet
-  (architecture is being decided).
+- **Stack:** React Native (Expo, expo-router, TypeScript). App data on-device
+  (SQLite + Drizzle), state via Zustand. Backend: Cloudflare Workers + D1 for
+  **accounts only** (`backend/auth-worker/`) — see ADR-001.
+- **Status:** planning + design + UI prototype done. The RN app in `mobile/`
+  is mostly **UI-only** (data/calc/DB not wired yet), except **auth**, which is
+  wired to the Cloudflare worker (signup/login/session). Backend is built +
+  tested locally, not yet deployed.
 
 ## Where things live (source of truth = this repo)
 

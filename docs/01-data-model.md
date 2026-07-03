@@ -35,9 +35,8 @@ not yet scoped). See [ADR-001](07-architecture.md#adr-001--backend-for-accounts-
 ## Local entities (on-device SQLite)
 
 ### UserProfile
-The single local user (no multi-account needed for local-only MVP). Distinct
-from the backend `User` above — not yet linked; profile sync is a future,
-separate decision.
+The single on-device user (one profile per install). Distinct from the backend
+`User` above — not yet linked; profile sync is a future, separate decision.
 
 | Field | Type | Notes |
 |---|---|---|

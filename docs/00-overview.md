@@ -46,7 +46,12 @@ active data against your goal.
 - **Stage 5 — Progress & Analytics**: steps/points, weight trend, volume per
   muscle group, PR tracking, adherence.
 - **Stage 6 — Integrations & Play Store readiness**: Health Connect wiring,
-  privacy policy, Play Data Safety form, optional cloud sync/auth.
+  privacy policy, Play Data Safety form.
+
+Accounts (email/password signup + login) are handled by a Cloudflare Workers
+backend — see [07-architecture.md ADR-001](07-architecture.md#adr-001--backend-for-accounts-cloudflare-workers--d1-auth-first)
+and feature F8/F9 in [feature-log](../features/feature-log.md). Syncing
+on-device fitness data to that backend is a separate, still-open question.
 
 ## Section docs
 
@@ -65,6 +70,8 @@ active data against your goal.
   Phase 1 = derived calorie/macro targets + a daily calorie check-in; a full
   itemized food log is a future update. See
   [06-health-calculations.md](06-health-calculations.md) and feature F8.
-- Multi-device sync — deferred until local-only MVP is validated.
+- Multi-device sync of fitness data — deferred. Accounts now exist (Cloudflare
+  backend, auth only), but syncing the on-device profile/logs up to the server
+  is not yet designed.
 - iOS support — Expo keeps this open later, but Health Connect is Android-only,
   so steps tracking would need an Apple Health equivalent if pursued.

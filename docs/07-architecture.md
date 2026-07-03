@@ -4,14 +4,23 @@ Landing doc for tech/architecture decisions. Research and options are explored
 in the connected claude.ai Project; **decisions get recorded here as ADRs** so
 Claude Code and every future session pick them up.
 
-## Decided so far (from 00-overview)
+## Decided so far
 
 - React Native (Expo, expo-router, TypeScript).
-- Local-only persistence: SQLite via Drizzle ORM. No backend yet.
+- **On-device** app data: SQLite via Drizzle ORM (profile, programs, logs).
+- **Backend** (accounts only): Cloudflare Workers + D1, one worker per service.
+  First service is `auth-worker` (`backend/auth-worker/`). See
+  [ADR-001](#adr-001--backend-for-accounts-cloudflare-workers--d1-auth-first).
+  DB choice (D1) is a first pick under test, not locked.
 - State: Zustand. Charts: react-native-svg. Glass: expo-blur.
 - Steps/activity source: Android Health Connect (not the deprecated Google
   Fit API).
 - Rule-based split generator (not ML).
+
+> Scope note: the backend exists for **accounts** only. All fitness data
+> (profile, programs, sessions, sets, measurements) still lives on-device.
+> Whether/how to sync that data to the backend is an open question (#1 below),
+> not a decided thing.
 
 ## Open questions to research
 
