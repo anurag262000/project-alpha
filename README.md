@@ -25,8 +25,11 @@ project-alpha/
 │   ├── design-system.md     canonical visual language (light glass, tokens)
 │   ├── design-log.md        dated design decisions + reasoning
 │   └── prototype/           runnable clickable HTML prototype (light + dark)
-└── features/            what it does, over time
-    └── feature-log.md       per-feature requirements, mutations, and bugs
+├── features/            what it does, over time
+│   └── feature-log.md       per-feature requirements, mutations, and bugs
+└── mobile/              the React Native (Expo) app — UI prototype so far
+    ├── app/                 expo-router screens (onboarding built)
+    └── src/                 theme, ui kit, calc (parked), schema (parked)
 ```
 
 ## Where to look for…
@@ -42,6 +45,7 @@ project-alpha/
 | Understand *why* the design looks this way | [design/design-log.md](design/design-log.md) |
 | Click through the UI | [design/prototype/](design/prototype/) (see below) |
 | Track features, requirement changes, bugs | [features/feature-log.md](features/feature-log.md) |
+| Run the RN app (UI prototype) | [mobile/README.md](mobile/README.md) |
 
 ## Running the prototype
 
