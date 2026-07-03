@@ -17,13 +17,13 @@ import { radius } from '@/theme/tokens';
 export function Screen({
   children,
   ambient = 'default',
-  scroll,
   contentStyle,
+  bottomNav,
 }: {
   children: React.ReactNode;
   ambient?: 'default' | 'red' | 'green' | 'none';
-  scroll?: boolean;
   contentStyle?: StyleProp<ViewStyle>;
+  bottomNav?: React.ReactNode;
 }) {
   const { theme } = useTheme();
   return (
@@ -49,6 +49,7 @@ export function Screen({
           {children}
         </View>
       </SafeAreaView>
+      {bottomNav}
     </View>
   );
 }

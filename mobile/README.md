@@ -19,9 +19,13 @@ Then press `a` (Android emulator), `i` (iOS simulator), or scan the QR code
 with the Expo Go app on your phone.
 
 The app opens on a **prototype launcher** — tap any screen to review it, and
-use the light/dark toggle (top-right) to switch themes. Or walk the flow:
-Welcome → Basics → Activity → Goal → Experience → Schedule → Equipment →
-Health → Plan ready.
+use the light/dark toggle (top-right) to switch themes.
+
+- **Onboarding:** Welcome → Basics → Activity → Goal → Experience → Schedule →
+  Equipment → Health → Plan ready.
+- **App:** Home, Program, Library, Logging (scroll-dial), Summary, Progress,
+  Profile — with a floating glass bottom nav and contextual links (Home
+  "Start workout" → Logging → Summary).
 
 ## What's wired vs not
 
@@ -40,7 +44,8 @@ mobile/
 ├── app/                      expo-router routes
 │   ├── _layout.tsx           providers + Stack
 │   ├── index.tsx             prototype launcher
-│   └── onboarding/           the 9 onboarding screens
+│   ├── onboarding/           the 9 onboarding screens
+│   └── (app)/                home, program, library, logging, summary, progress, profile
 ├── src/
 │   ├── theme/                tokens (light/dark) + ThemeProvider
 │   ├── components/           ui kit (Glass, buttons…) + onboarding pieces
