@@ -5,18 +5,24 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Screen, Glass, PrimaryButton } from '@/components/ui';
 import { StepHeader, OptionCard } from '@/components/onboarding';
 import { useTheme } from '@/theme/ThemeProvider';
+import { useOnboarding } from '@/store/onboarding';
+import type { LifestyleActivity } from '@/lib/health';
 
 const OPTIONS = [
-  { icon: 'sofa-single', title: 'Mostly sedentary', sub: 'Desk job, little walking' },
-  { icon: 'walk', title: 'Lightly active', sub: 'Some walking through the day' },
-  { icon: 'run', title: 'Moderately active', sub: 'On your feet a good part of the day' },
-  { icon: 'briefcase-variant', title: 'Very active', sub: 'Physical or manual job' },
+  { icon: 'sofa-single', title: 'Mostly sedentary', sub: 'Desk job, little walking', value: 'sedentary' },
+  { icon: 'walk', title: 'Lightly active', sub: 'Some walking through the day', value: 'light' },
+  { icon: 'run', title: 'Moderately active', sub: 'On your feet a good part of the day', value: 'moderate' },
+  { icon: 'briefcase-variant', title: 'Very active', sub: 'Physical or manual job', value: 'very' },
 ] as const;
 
 export default function Activity() {
   const router = useRouter();
   const { theme } = useTheme();
-  const [selected, setSelected] = useState(2);
+  const draft = useOnboarding((s) => s.draft);
+  const setDraft = useOnboarding((s) => s.set);
+  const [selected, setSelected] = useState(() =>
+    Math.max(0, OPTIONS.findIndex((o) => o.value === (draft.lifestyleActivity ?? 'moderate')))
+  );
 
   return (
     <Screen ambient="green">
@@ -47,7 +53,13 @@ export default function Activity() {
         </Glass>
       </ScrollView>
       <View style={{ paddingTop: 12 }}>
-        <PrimaryButton label="Continue" onPress={() => router.push('/onboarding/goal')} />
+        <PrimaryButton
+          label="Continue"
+          onPress={() => {
+            setDraft({ lifestyleActivity: OPTIONS[selected].value as LifestyleActivity });
+            router.push('/onboarding/goal');
+          }}
+        />
       </View>
     </Screen>
   );

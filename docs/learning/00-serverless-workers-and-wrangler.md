@@ -99,6 +99,11 @@ We chose D1 as a **first pick to test**, not a final decision (see ADR-001 in
 [../07-architecture.md](../07-architecture.md)). If it doesn't hold up, we swap
 it and update the ADR.
 
+> **2026-07-04:** that swap happened — we moved to **Turso** (ADR-002) before
+> first deploy. The concepts above still matter (D1 is the canonical example
+> of a *binding*), but the database this project actually uses is Turso; see
+> [02-turso-libsql-migration.md](02-turso-libsql-migration.md).
+
 ---
 
 ## 5. Workers vs AWS Lambda (if you know Lambda)

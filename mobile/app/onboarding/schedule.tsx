@@ -3,12 +3,15 @@ import { ScrollView, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Screen, Cap, Segmented, PrimaryButton } from '@/components/ui';
 import { StepHeader, DayPicker } from '@/components/onboarding';
+import { useOnboarding } from '@/store/onboarding';
 
 export default function Schedule() {
   const router = useRouter();
-  const [days, setDays] = useState<number[]>([1, 3, 5, 6]);
-  const [time, setTime] = useState<'morning' | 'midday' | 'evening' | 'flexible'>('evening');
-  const [length, setLength] = useState('60');
+  const draft = useOnboarding((s) => s.draft);
+  const setDraft = useOnboarding((s) => s.set);
+  const [days, setDays] = useState<number[]>(draft.trainingDays ?? [1, 3, 5, 6]);
+  const [time, setTime] = useState<'morning' | 'midday' | 'evening' | 'flexible'>(draft.preferredTime ?? 'evening');
+  const [length, setLength] = useState(String(draft.sessionLengthMin ?? 60));
 
   const toggle = (d: number) =>
     setDays((prev) => (prev.includes(d) ? prev.filter((x) => x !== d) : [...prev, d]));
@@ -47,7 +50,14 @@ export default function Schedule() {
         />
       </ScrollView>
       <View style={{ paddingTop: 12 }}>
-        <PrimaryButton label="Continue" onPress={() => router.push('/onboarding/equipment')} />
+        <PrimaryButton
+          label="Continue"
+          onPress={() => {
+            if (days.length === 0) return; // must pick at least one day
+            setDraft({ trainingDays: [...days].sort(), preferredTime: time, sessionLengthMin: parseInt(length, 10) });
+            router.push('/onboarding/equipment');
+          }}
+        />
       </View>
     </Screen>
   );

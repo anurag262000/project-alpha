@@ -3,17 +3,22 @@ import { ScrollView, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Screen, PrimaryButton } from '@/components/ui';
 import { StepHeader, OptionCard } from '@/components/onboarding';
+import { useOnboarding, type Experience as ExperienceType } from '@/store/onboarding';
 
 const OPTIONS = [
-  { icon: 'sprout', title: 'New to lifting', sub: 'Just getting started' },
-  { icon: 'fire', title: 'Under 1 year', sub: 'Building the habit' },
-  { icon: 'trending-up', title: '1–3 years', sub: 'Consistent and progressing' },
-  { icon: 'medal-outline', title: '3+ years', sub: 'Advanced trainer' },
+  { icon: 'sprout', title: 'New to lifting', sub: 'Just getting started', value: 'new' },
+  { icon: 'fire', title: 'Under 1 year', sub: 'Building the habit', value: 'under_1yr' },
+  { icon: 'trending-up', title: '1–3 years', sub: 'Consistent and progressing', value: '1_3yr' },
+  { icon: 'medal-outline', title: '3+ years', sub: 'Advanced trainer', value: '3yr_plus' },
 ] as const;
 
 export default function Experience() {
   const router = useRouter();
-  const [selected, setSelected] = useState(2);
+  const draft = useOnboarding((s) => s.draft);
+  const setDraft = useOnboarding((s) => s.set);
+  const [selected, setSelected] = useState(() =>
+    Math.max(0, OPTIONS.findIndex((o) => o.value === (draft.experienceLevel ?? '1_3yr')))
+  );
 
   return (
     <Screen ambient="green">
@@ -38,7 +43,13 @@ export default function Experience() {
         </View>
       </ScrollView>
       <View style={{ paddingTop: 12 }}>
-        <PrimaryButton label="Continue" onPress={() => router.push('/onboarding/schedule')} />
+        <PrimaryButton
+          label="Continue"
+          onPress={() => {
+            setDraft({ experienceLevel: OPTIONS[selected].value as ExperienceType });
+            router.push('/onboarding/schedule');
+          }}
+        />
       </View>
     </Screen>
   );

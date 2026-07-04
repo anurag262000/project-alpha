@@ -1,5 +1,6 @@
 /**
- * D1 schema for auth-worker. Mirrors the style of mobile/src/db/schema.ts.
+ * Turso (libsql) schema for auth-worker — same SQLite dialect as the old D1
+ * setup, see ADR-002. Mirrors the style of mobile/src/db/schema.ts.
  * Deliberately separate from the mobile app's local UserProfile — this is
  * account/session data, not the fitness profile.
  */

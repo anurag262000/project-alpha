@@ -1,11 +1,17 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
-import { drizzle } from 'drizzle-orm/d1';
+import { createClient } from '@libsql/client/web';
+import { drizzle } from 'drizzle-orm/libsql';
 import { eq } from 'drizzle-orm';
 import { sessions, users } from './schema';
 import { generateSessionToken, hashPassword, verifyPassword } from './crypto';
 
-type Bindings = { DB: D1Database };
+// TURSO_DATABASE_URL lives in wrangler.toml [vars]; TURSO_AUTH_TOKEN is a
+// secret (`wrangler secret put` in prod, `.dev.vars` locally).
+type Bindings = { TURSO_DATABASE_URL: string; TURSO_AUTH_TOKEN: string };
+
+const dbFor = (env: Bindings) =>
+  drizzle(createClient({ url: env.TURSO_DATABASE_URL, authToken: env.TURSO_AUTH_TOKEN }));
 
 const SESSION_TTL_SECONDS = 30 * 24 * 60 * 60; // 30 days
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -35,7 +41,7 @@ async function resolveUser(db: ReturnType<typeof drizzle>, authHeader: string | 
 }
 
 app.post('/signup', async (c) => {
-  const db = drizzle(c.env.DB);
+  const db = dbFor(c.env);
   const body = await c.req
     .json<{ email?: string; password?: string }>()
     .catch(() => ({}) as { email?: string; password?: string });
@@ -59,7 +65,7 @@ app.post('/signup', async (c) => {
 });
 
 app.post('/login', async (c) => {
-  const db = drizzle(c.env.DB);
+  const db = dbFor(c.env);
   const body = await c.req
     .json<{ email?: string; password?: string }>()
     .catch(() => ({}) as { email?: string; password?: string });
@@ -79,14 +85,14 @@ app.post('/login', async (c) => {
 });
 
 app.post('/logout', async (c) => {
-  const db = drizzle(c.env.DB);
+  const db = dbFor(c.env);
   const token = c.req.header('Authorization')?.replace('Bearer ', '');
   if (token) await db.delete(sessions).where(eq(sessions.token, token));
   return Response.json({ ok: true });
 });
 
 app.get('/me', async (c) => {
-  const db = drizzle(c.env.DB);
+  const db = dbFor(c.env);
   const resolved = await resolveUser(db, c.req.header('Authorization'));
   if (!resolved) return err('Not authenticated.', 401);
   return Response.json({ user: { id: resolved.user.id, email: resolved.user.email } });

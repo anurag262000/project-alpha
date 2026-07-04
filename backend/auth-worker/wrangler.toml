@@ -2,10 +2,9 @@ name = "project-alpha-auth-worker"
 main = "src/index.ts"
 compatibility_date = "2024-11-01"
 
-# Created via `wrangler d1 create project-alpha-auth` — paste the id it
-# returns below. Not created yet; see backend/README.md.
-[[d1_databases]]
-binding = "DB"
-database_name = "project-alpha-auth"
-database_id = "REPLACE_ME_AFTER_WRANGLER_D1_CREATE"
-migrations_dir = "drizzle"
+# DB is Turso (libsql over HTTP), not D1 — see ADR-002. The URL is not a
+# secret; the auth token is:
+#   local dev  → .dev.vars (gitignored)
+#   production → `wrangler secret put TURSO_AUTH_TOKEN`
+[vars]
+TURSO_DATABASE_URL = "libsql://project-alpha-anurag262000.aws-ap-south-1.turso.io"

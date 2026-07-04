@@ -6,7 +6,13 @@
 import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
 
-const uuid = () => text('id').primaryKey().$defaultFn(() => crypto.randomUUID());
+// Lazy require: Hermes has no global crypto.randomUUID, and a top-level
+// expo-crypto import breaks drizzle-kit's Node-side schema parsing.
+const newId = (): string => {
+  const { randomUUID } = require('expo-crypto') as typeof import('expo-crypto');
+  return randomUUID();
+};
+const uuid = () => text('id').primaryKey().$defaultFn(newId);
 const now = () => text().default(sql`(CURRENT_TIMESTAMP)`);
 
 // --- Profile ---------------------------------------------------------------
@@ -99,8 +105,127 @@ export const calorieCheckin = sqliteTable('calorie_checkin', {
   source: text('source').$type<'manual' | 'food_log'>().default('manual'),
 });
 
+// --- Exercise library (seeded, read-mostly) --------------------------------
+
+export const exercise = sqliteTable('exercise', {
+  id: uuid(),
+  name: text('name').notNull(),
+  primaryMuscle: text('primary_muscle')
+    .$type<
+      | 'chest' | 'back' | 'quads' | 'hamstrings' | 'glutes'
+      | 'shoulders' | 'biceps' | 'triceps' | 'core' | 'calves'
+    >()
+    .notNull(),
+  secondaryMuscles: text('secondary_muscles', { mode: 'json' }).$type<string[]>().default(sql`'[]'`),
+  movementPattern: text('movement_pattern')
+    .$type<'push' | 'pull' | 'hinge' | 'squat' | 'carry' | 'isolation'>()
+    .notNull(),
+  equipment: text('equipment', { mode: 'json' }).$type<string[]>().notNull(), // barbell, dumbbell, machine, bodyweight, band, kettlebell, bench
+  difficulty: text('difficulty').$type<'beginner' | 'intermediate' | 'advanced'>().notNull(),
+  instructions: text('instructions').default(''),
+  mediaUrl: text('media_url'),
+  sourceAttribution: text('source_attribution').default('seed'),
+});
+
+// --- Program (plan) ---------------------------------------------------------
+
+export const program = sqliteTable('program', {
+  id: uuid(),
+  profileId: text('profile_id')
+    .notNull()
+    .references(() => profile.id),
+  name: text('name').notNull(),
+  goal: text('goal')
+    .$type<'fat_loss' | 'muscle_gain' | 'recomp' | 'general_fitness'>()
+    .notNull(), // snapshot of profile.goal at generation time
+  daysPerWeek: integer('days_per_week').notNull(),
+  status: text('status').$type<'active' | 'archived'>().notNull().default('active'),
+  origin: text('origin').$type<'generated' | 'custom'>().notNull(),
+  generatedAt: text('generated_at').default(sql`(CURRENT_TIMESTAMP)`),
+});
+
+export const programDay = sqliteTable('program_day', {
+  id: uuid(),
+  programId: text('program_id')
+    .notNull()
+    .references(() => program.id),
+  weekday: integer('weekday'), // 0=Sun..6=Sat; null = "day N of rotation"
+  orderIndex: integer('order_index').notNull(),
+  label: text('label').notNull(), // e.g. "Upper A"
+});
+
+export const programExercise = sqliteTable('program_exercise', {
+  id: uuid(),
+  programDayId: text('program_day_id')
+    .notNull()
+    .references(() => programDay.id),
+  exerciseId: text('exercise_id')
+    .notNull()
+    .references(() => exercise.id),
+  orderIndex: integer('order_index').notNull(),
+  targetSets: integer('target_sets').notNull(),
+  targetRepMin: integer('target_rep_min').notNull(),
+  targetRepMax: integer('target_rep_max').notNull(),
+  targetRpe: real('target_rpe'),
+  notes: text('notes'),
+});
+
+// --- Workout logging (actual) -----------------------------------------------
+
+export const workoutSession = sqliteTable('workout_session', {
+  id: uuid(),
+  profileId: text('profile_id')
+    .notNull()
+    .references(() => profile.id),
+  programDayId: text('program_day_id').references(() => programDay.id), // null = ad-hoc session
+  date: text('date').notNull(), // ISO date
+  startedAt: text('started_at'),
+  completedAt: text('completed_at'),
+  status: text('status').$type<'in_progress' | 'completed' | 'skipped'>().notNull().default('in_progress'),
+});
+
+export const loggedSet = sqliteTable('logged_set', {
+  id: uuid(),
+  sessionId: text('session_id')
+    .notNull()
+    .references(() => workoutSession.id),
+  exerciseId: text('exercise_id')
+    .notNull()
+    .references(() => exercise.id), // may differ from plan (substitution)
+  programExerciseId: text('program_exercise_id').references(() => programExercise.id), // null = ad-hoc
+  setIndex: integer('set_index').notNull(),
+  reps: integer('reps').notNull(),
+  weightKg: real('weight_kg').notNull(),
+  rpe: real('rpe'),
+  isWarmup: integer('is_warmup', { mode: 'boolean' }).notNull().default(false),
+  completedAt: text('completed_at').default(sql`(CURRENT_TIMESTAMP)`),
+});
+
+// --- Passive activity (Health Connect, future) -------------------------------
+
+export const activitySnapshot = sqliteTable('activity_snapshot', {
+  id: uuid(),
+  profileId: text('profile_id')
+    .notNull()
+    .references(() => profile.id),
+  date: text('date').notNull(),
+  steps: integer('steps').notNull().default(0),
+  activeMinutes: integer('active_minutes').notNull().default(0),
+  points: integer('points').notNull().default(0),
+  source: text('source').$type<'health_connect'>().default('health_connect'),
+});
+
 export type Profile = typeof profile.$inferSelect;
 export type NewProfile = typeof profile.$inferInsert;
 export type BodyMeasurement = typeof bodyMeasurement.$inferSelect;
 export type HealthScreening = typeof healthScreening.$inferSelect;
 export type CalorieCheckin = typeof calorieCheckin.$inferSelect;
+export type Exercise = typeof exercise.$inferSelect;
+export type Program = typeof program.$inferSelect;
+export type ProgramDay = typeof programDay.$inferSelect;
+export type ProgramExercise = typeof programExercise.$inferSelect;
+export type WorkoutSession = typeof workoutSession.$inferSelect;
+export type NewWorkoutSession = typeof workoutSession.$inferInsert;
+export type LoggedSet = typeof loggedSet.$inferSelect;
+export type NewLoggedSet = typeof loggedSet.$inferInsert;
+export type ActivitySnapshot = typeof activitySnapshot.$inferSelect;

@@ -9,6 +9,13 @@ Status when written (2026-07-03): the worker is built and **tested locally**
 Cloudflare yet — that's the human step below. Run everything from
 `backend/auth-worker/`.
 
+> **⚠️ 2026-07-04 update:** the database moved from D1 to **Turso** (ADR-002)
+> before first deploy. Steps 2–3 below (D1 create + `wrangler d1 migrations`)
+> are **superseded** — use the migration + deploy path in
+> [02-turso-libsql-migration.md](02-turso-libsql-migration.md) §6–7 instead.
+> Steps 0–1 (deps, `wrangler login`) and 4–6 (deploy, point the app, verify)
+> still apply as written.
+
 ---
 
 ## Prerequisites

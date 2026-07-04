@@ -5,6 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Screen, Glass, Cap, Segmented, PrimaryButton } from '@/components/ui';
 import { StepHeader, Chip } from '@/components/onboarding';
 import { useTheme } from '@/theme/ThemeProvider';
+import { useOnboarding } from '@/store/onboarding';
 
 const PARQ = [
   'Heart condition diagnosed by a doctor',
@@ -16,8 +17,9 @@ const INJURIES = ['Shoulder', 'Lower back', 'Knee', 'Wrist', 'Elbow', 'Hip', 'No
 export default function Health() {
   const router = useRouter();
   const { theme } = useTheme();
+  const setDraft = useOnboarding((s) => s.set);
   const [answers, setAnswers] = useState<Record<number, 'yes' | 'no'>>({ 0: 'no', 1: 'no', 2: 'no' });
-  const [injuries, setInjuries] = useState<string[]>(['Shoulder']);
+  const [injuries, setInjuries] = useState<string[]>([]);
 
   const toggleInjury = (name: string) => {
     if (name === 'None') return setInjuries(['None']);
@@ -81,7 +83,16 @@ export default function Health() {
         </Glass>
       </ScrollView>
       <View style={{ paddingTop: 12 }}>
-        <PrimaryButton label="See my plan" onPress={() => router.push('/onboarding/ready')} />
+        <PrimaryButton
+          label="See my plan"
+          onPress={() => {
+            setDraft({
+              parqAnswers: PARQ.map((_, i) => answers[i] === 'yes'),
+              injuries: injuries.filter((x) => x !== 'None'),
+            });
+            router.push('/onboarding/ready');
+          }}
+        />
       </View>
     </Screen>
   );

@@ -6,6 +6,27 @@ When the design changes, add an entry here — this is the "why" behind
 
 ---
 
+## 2026-07-04 — Functional logging + real-data screens (interim interactions)
+
+- **Set logging is keyboard-entry for now, not the scroll-dial.** The dial
+  (three inertial wheels, no keyboard) needs a custom gesture component to
+  feel right; a half-good dial is worse than honest text fields. The dial
+  remains the target interaction (F5 requirement unchanged) — the current
+  three numeric fields (KG / Reps / RPE) + warm-up chip are a placeholder
+  with the same information design.
+- Exercise selection is a full-screen modal list (name + muscle + difficulty)
+  — fine at 28 seed exercises, will need search/filter when the full library
+  lands (F2).
+- Screens now render **real data instead of mock copy**: plan-ready shows the
+  actual computed targets, summary shows the session's real volume/duration/
+  sets/PRs, profile shows the signed-in email, latest weight, height, and
+  workout count. Mock-only rows that had no backing feature (Health Connect
+  "Connected", Reminders, Export data) were removed from Profile rather than
+  shipped as dead UI; they return when their features exist.
+- Onboarding Basics became a real form (DOB / height / weight text fields with
+  validation + live BMI card). Date input is a plain `YYYY-MM-DD` field for
+  now — a proper date picker is a later polish item.
+
 ## 2026-07-02 — Full screen set + light/dark modes
 
 - Expanded the prototype from 4 screens to the full set: all onboarding steps

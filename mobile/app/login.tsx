@@ -6,6 +6,7 @@ import { Screen, Title, Sub, TextField, PrimaryButton, GhostButton } from '@/com
 import { useTheme } from '@/theme/ThemeProvider';
 import { useAuth } from '@/store/auth';
 import { ApiError } from '@/lib/api';
+import { getProfile } from '@/db/profileRepo';
 
 export default function Login() {
   const router = useRouter();
@@ -23,7 +24,9 @@ export default function Login() {
     setBusy(true);
     try {
       await signIn(email, password);
-      router.replace('/home');
+      // Fresh install of an existing account has no local profile yet.
+      const profile = await getProfile();
+      router.replace(profile ? '/home' : '/onboarding/basics');
     } catch (e) {
       setError(e instanceof ApiError ? e.message : 'Could not log you in.');
     } finally {

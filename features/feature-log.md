@@ -6,7 +6,7 @@ Status legend: `planned` · `prototyped` · `in-dev` · `shipped`.
 ---
 
 ## F1 — Onboarding & profile
-**Status:** planned (spec complete)
+**Status:** in-dev
 **Spec:** [../docs/03-onboarding-flow.md](../docs/03-onboarding-flow.md) ·
 [../docs/06-health-calculations.md](../docs/06-health-calculations.md)
 
@@ -30,6 +30,15 @@ Profile → "Complete your profile".
   split (exclusion map in [06 §7](../docs/06-health-calculations.md#7-injury--movement-exclusion-map));
   medical/meds stored + safety disclaimer. Reason: onboarding is the base of
   the whole app — the plan and targets are only as good as this intake.
+- 2026-07-04 — **Implemented in the RN app** (status → in-dev). All 7 steps
+  now write to a shared draft store; Basics is a real form (DOB / height /
+  weight with validation + live BMI) instead of hardcoded display values.
+  Plan-ready screen shows genuinely computed targets. On account creation the
+  draft persists to on-device SQLite as `profile` (with cached
+  BMR/TDEE/calorie/macro targets), first `body_measurement` (accuracy flag +
+  BMI), and `health_screening`. App entry gate: signed-out → welcome,
+  signed-in without profile → onboarding, else → home. Split generation at
+  completion is still a placeholder (F3 not built).
 
 **Bugs:** none yet.
 
@@ -46,6 +55,10 @@ and equipment. Seeded from an open dataset (free-exercise-db to start).
 - 2026-07-02 — Decided to seed from an existing open, licensable dataset rather
   than hand-authoring; free-exercise-db first, wger as fallback if coverage is
   short.
+- 2026-07-04 — Interim: a hand-picked **28-exercise starter seed** (every
+  primary muscle + movement pattern, `mobile/src/db/seed.ts`) ships in the
+  local DB so logging works end-to-end now. The full open-dataset import
+  remains the requirement; the seed is idempotent and will be replaced by it.
 
 **Bugs:** none yet.
 
@@ -87,7 +100,7 @@ Health Connect.
 ---
 
 ## F5 — Workout logging (scroll-dial)
-**Status:** prototyped
+**Status:** in-dev
 **Spec:** [../docs/04-home-logging-ux.md](../docs/04-home-logging-ux.md)
 
 **Current requirement:** Per-set logging via three scroll wheels (weight /
@@ -97,6 +110,14 @@ dots, exercise substitution, and a completion summary with PRs.
 **Mutations:**
 - 2026-07-02 — Scroll-dial confirmed as the core interaction; wheels default to
   last logged values so repeat sets need zero scrolling.
+- 2026-07-04 — **First functional version in the RN app.** Sessions and sets
+  persist to on-device SQLite (`workout_session`, `logged_set`): start / log
+  sets (kg, reps, optional RPE, warm-up flag) / finish, "last time" ghost
+  text per exercise, recent-workouts history on the logging tab, and a real
+  completion summary (volume, duration, set count, compute-on-read PRs).
+  Interim interaction is **keyboard entry, not the scroll-dial** — the dial
+  needs a custom wheel component and stays the target UX (see design-log
+  2026-07-04). Sessions are ad-hoc (`program_day_id` null) until F3 exists.
 
 **Bugs:** none yet.
 
@@ -161,9 +182,10 @@ adherence %.
 [../docs/flow-diagrams/auth.md](../docs/flow-diagrams/auth.md)
 
 **Current requirement:** Email/password signup and login backed by a
-Cloudflare Worker (`backend/auth-worker/`) over D1. Signup step sits at the end
-of onboarding (after "Plan ready"); returning users log in from Welcome.
-Opaque bearer-token session stored in `expo-secure-store`, restored on launch.
+Cloudflare Worker (`backend/auth-worker/`) over Turso (libsql). Signup step
+sits at the end of onboarding (after "Plan ready"); returning users log in
+from Welcome. Opaque bearer-token session stored in `expo-secure-store`,
+restored on launch.
 
 **Mutations:**
 - 2026-07-03 — Created. Reverses the earlier local-only stance (00-overview
@@ -171,6 +193,12 @@ Opaque bearer-token session stored in `expo-secure-store`, restored on launch.
   only** — creating an account + session. Syncing the local `UserProfile` to
   the backend is deliberately **out of scope** (still open question #1 in the
   architecture doc). DB is D1 as a first pick under test, not locked.
+- 2026-07-04 — DB switched **D1 → Turso** before first deploy, per ADR-002
+  (same SQLite dialect; monthly-reset free caps fit the batch pattern; small
+  lock-in hedge at zero cost). Worker now reads `TURSO_DATABASE_URL` (var) +
+  `TURSO_AUTH_TOKEN` (secret); drizzle-kit migrates against Turso directly.
+  Sign-out row added to the Profile screen; login on a fresh install with no
+  local profile routes into onboarding instead of an empty home.
 
 **Bugs:** none yet.
 

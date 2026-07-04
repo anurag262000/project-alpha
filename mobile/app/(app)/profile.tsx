@@ -1,11 +1,57 @@
+import { useCallback, useState } from 'react';
 import { ScrollView, View, Text, Pressable } from 'react-native';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Screen, Glass, Cap } from '@/components/ui';
 import { BottomNav } from '@/components/BottomNav';
 import { useTheme } from '@/theme/ThemeProvider';
+import { useAuth } from '@/store/auth';
+import { getProfile, latestMeasurement } from '@/db/profileRepo';
+import { recentSessions } from '@/db/workoutRepo';
+import type { Profile as ProfileRow } from '@/db/schema';
+
+const GOAL_LABEL: Record<string, string> = {
+  fat_loss: 'Fat loss',
+  muscle_gain: 'Muscle gain',
+  recomp: 'Recomp',
+  general_fitness: 'General fitness',
+};
+const EXP_LABEL: Record<string, string> = {
+  new: 'New',
+  under_1yr: '<1 yr',
+  '1_3yr': '1–3 yrs',
+  '3yr_plus': '3+ yrs',
+};
 
 export default function Profile() {
+  const router = useRouter();
   const { theme, name, toggle } = useTheme();
+  const user = useAuth((s) => s.user);
+  const signOut = useAuth((s) => s.signOut);
+
+  const [row, setRow] = useState<ProfileRow | null>(null);
+  const [weightKg, setWeightKg] = useState<number | null>(null);
+  const [workouts, setWorkouts] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      getProfile().then(async (p) => {
+        setRow(p);
+        if (p) {
+          const m = await latestMeasurement(p.id);
+          setWeightKg(m?.weightKg ?? null);
+          setWorkouts((await recentSessions(p.id, 1000)).length);
+        }
+      });
+    }, [])
+  );
+
+  const initials = (user?.email ?? '?').slice(0, 2).toUpperCase();
+
+  const doSignOut = async () => {
+    await signOut();
+    router.replace('/onboarding/welcome');
+  };
 
   const Row = ({
     icon,
@@ -44,20 +90,28 @@ export default function Profile() {
               justifyContent: 'center',
             }}
           >
-            <Text style={{ fontSize: 22, fontWeight: '700', color: theme.onInk }}>AM</Text>
+            <Text style={{ fontSize: 22, fontWeight: '700', color: theme.onInk }}>{initials}</Text>
           </View>
-          <View>
-            <Text style={{ fontSize: 18, fontWeight: '700', color: theme.textPrimary }}>Anurag Mishra</Text>
-            <Text style={{ fontSize: 13, color: theme.textMuted }}>Fat loss · 1–3 yrs · Upper/Lower</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 18, fontWeight: '700', color: theme.textPrimary }} numberOfLines={1}>
+              {user?.email ?? 'Not signed in'}
+            </Text>
+            <Text style={{ fontSize: 13, color: theme.textMuted }}>
+              {row
+                ? `${GOAL_LABEL[row.goal]} · ${EXP_LABEL[row.experienceLevel]} · ${row.trainingDays.length} days/wk`
+                : 'Profile not set up yet'}
+            </Text>
           </View>
         </View>
 
         <Glass style={{ flexDirection: 'row', paddingVertical: 16, marginTop: 18 }}>
-          {[
-            ['81.6', 'kg'],
-            ['178', 'cm'],
-            ['42', 'workouts'],
-          ].map(([v, l], i) => (
+          {(
+            [
+              [weightKg != null ? String(weightKg) : '—', 'kg'],
+              [row ? String(row.heightCm) : '—', 'cm'],
+              [String(workouts), 'workouts'],
+            ] as const
+          ).map(([v, l], i) => (
             <View
               key={l}
               style={{
@@ -80,15 +134,18 @@ export default function Profile() {
             <Text style={{ flex: 1, fontSize: 14, color: theme.textPrimary }}>Units</Text>
             {muted('Metric')}
           </View>
-          <Row icon="heart-pulse" label="Health Connect" right={<Text style={{ fontSize: 13, color: theme.greenText }}>Connected</Text>} />
-          <Row icon="bell-outline" label="Reminders" right={muted('7:00 PM')} />
           <Row
             icon="theme-light-dark"
             label="Appearance"
             onPress={toggle}
             right={muted(name === 'dark' ? 'Dark' : 'Light')}
           />
-          <Row icon="download" label="Export data" right={<MaterialCommunityIcons name="chevron-right" size={20} color={theme.textDisabled} />} />
+          <Row
+            icon="logout"
+            label="Sign out"
+            onPress={doSignOut}
+            right={<MaterialCommunityIcons name="chevron-right" size={20} color={theme.textDisabled} />}
+          />
         </Glass>
       </ScrollView>
     </Screen>

@@ -7,15 +7,16 @@
     "deploy": "wrangler deploy",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
-    "db:migrate:local": "wrangler d1 migrations apply project-alpha-auth --local",
-    "db:migrate:remote": "wrangler d1 migrations apply project-alpha-auth --remote"
+    "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
+    "@libsql/client": "^0.14.0",
     "drizzle-orm": "^0.36.4",
     "hono": "^4.6.13"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241127.0",
+    "dotenv": "^16.4.5",
     "drizzle-kit": "^0.28.1",
     "typescript": "~5.3.3",
     "wrangler": "^3.90.0"

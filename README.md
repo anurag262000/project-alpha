@@ -7,9 +7,10 @@ loggers.
 
 Personal-use first, structured to be Play-Store-ready later.
 Stack: React Native (Expo); app data on-device (SQLite + Drizzle); a Cloudflare
-Workers backend for **accounts only** (`backend/auth-worker/`). The `mobile/`
-app is a UI prototype with **auth** wired to the backend; the rest of the data
-layer is not wired yet.
+Workers backend for **accounts only** (`backend/auth-worker/`, DB on **Turso**
+— see ADR-002). The `mobile/` app is a working prototype: auth, onboarding →
+profile persistence, and workout logging run against real databases; program
+generation and home/progress screens are still mock UI.
 
 ## Repository map
 
@@ -35,10 +36,11 @@ project-alpha/
 ├── features/            what it does, over time
 │   └── feature-log.md       per-feature requirements, mutations, and bugs
 ├── backend/             Cloudflare Workers — one dir per service
-│   └── auth-worker/         email/password auth (Hono + Drizzle + D1)
+│   └── auth-worker/         email/password auth (Hono + Drizzle + Turso)
 └── mobile/              the React Native (Expo) app
-    ├── app/                 expo-router screens (onboarding + auth built)
-    └── src/                 theme, ui kit, api client, auth store, schema
+    ├── app/                 expo-router screens (onboarding, auth, logging wired)
+    ├── drizzle/             generated .sql migrations (applied on app launch)
+    └── src/                 theme, ui kit, api client, stores, db (schema/repos/seed)
 ```
 
 ## Where to look for… (grouped by topic)
@@ -76,12 +78,80 @@ project-alpha/
 | I want to… | Go to |
 |---|---|
 | Track features, requirement changes, bugs | [features/feature-log.md](features/feature-log.md) |
-| Run the RN app (UI prototype) | [mobile/README.md](mobile/README.md) |
+| Run the app, backend & DB studio | [Running the app](#running-the-app-development) below |
+| Mobile-specific details | [mobile/README.md](mobile/README.md) |
 
-## Running the prototype
+## Running the app (development)
 
-The finalized UI lives as a self-contained, offline HTML prototype covering
-the full screen set (onboarding + app) with a light/dark toggle.
+Three processes: a local database, the auth worker, and the Expo app. Run
+each in its own terminal, in this order. (Concepts and troubleshooting live
+in [docs/learning/](docs/learning/) — guides 02 and 03.)
+
+### 1. Backend — local DB + worker
+
+```bash
+# Terminal A — local libsql server (no account/token needed; data in authdev.db)
+turso dev --db-file authdev.db --port 8880
+
+# Terminal B — apply schema (first run / after schema changes), then the worker
+cd backend/auth-worker
+TURSO_DATABASE_URL=http://127.0.0.1:8880 npx drizzle-kit migrate
+npx wrangler dev --port 8787
+```
+
+`backend/auth-worker/.dev.vars` (gitignored) points `wrangler dev` at the
+local DB. Quick smoke test:
+`curl -s -X POST http://localhost:8787/signup -H 'content-type: application/json' -d '{"email":"a@b.co","password":"password123"}'`
+
+To run against the **hosted** Turso DB / deploy to Cloudflare instead, see
+[docs/learning/02-turso-libsql-migration.md](docs/learning/02-turso-libsql-migration.md) §6–7
+(credentials go in `backend/.env`, gitignored).
+
+### 2. Mobile app
+
+```bash
+# Terminal C
+cd mobile
+EXPO_PUBLIC_API_URL=http://localhost:8787 npx expo start
+```
+
+Then press `a` for the Android emulator (Expo Go), or scan the QR on a
+device. If the emulator can't reach Metro or the worker, forward the ports:
+
+```bash
+adb reverse tcp:8081 tcp:8081   # Metro (use your --port if you changed it)
+adb reverse tcp:8787 tcp:8787   # auth worker
+```
+
+The on-device SQLite DB migrates itself on launch (drizzle `useMigrations`)
+and seeds the exercise library if empty. If launch fails with
+`table ... already exists`, the device has a DB from an older migration
+history — wipe Expo Go's data: `adb shell pm clear host.exp.exponent`.
+
+### 3. Inspecting the databases (Drizzle Studio)
+
+**Backend DB** — from `backend/auth-worker/`:
+
+```bash
+npx drizzle-kit studio    # opens https://local.drizzle.studio
+```
+
+It connects to whatever `backend/.env` points at — set
+`TURSO_DATABASE_URL=http://127.0.0.1:8880` (empty token) for the local dev
+DB, or the hosted `libsql://…` URL + token for production. **Check before
+you browse.**
+
+**Mobile on-device DB** — the app embeds
+[`expo-drizzle-studio-plugin`](https://github.com/drizzle-team/expo-drizzle-studio-plugin):
+with the app running via `npx expo start`, press **`shift+m`** in the Expo
+terminal and pick *expo-drizzle-studio-plugin* — Drizzle Studio opens in the
+browser against the live database on the device/emulator. Dev-only; no-op in
+production builds.
+
+## Running the HTML prototype
+
+The finalized UI also lives as a self-contained, offline HTML prototype
+covering the full screen set (onboarding + app) with a light/dark toggle.
 
 ```
 node design/prototype/server.js

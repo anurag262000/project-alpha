@@ -7,11 +7,14 @@ Keep **planned** data (what the program says to do) and **actual** data
 charts, adherence %, and progression rules possible — collapsing them into one
 table would lose the ability to compare intent against reality.
 
-## Backend entities (D1 — `backend/auth-worker/`)
+## Backend entities (Turso — `backend/auth-worker/`)
 
-These live server-side in Cloudflare D1, **not** in the on-device SQLite DB.
-They cover accounts only; the fitness data below stays local (profile sync is
-not yet scoped). See [ADR-001](07-architecture.md#adr-001--backend-for-accounts-cloudflare-workers--d1-auth-first).
+These live server-side in Turso (libsql, same SQLite dialect), **not** in the
+on-device SQLite DB. They cover accounts only; the fitness data below stays
+local (profile sync is not yet scoped). See
+[ADR-001](07-architecture.md#adr-001--backend-for-accounts-cloudflare-workers--d1-auth-first)
+and [ADR-002](07-architecture.md#adr-002--backend-data-model--db-for-whole-app-sync-auth--daily-activity--workout-aggregates)
+(D1 → Turso switch).
 
 ### User
 | Field | Type | Notes |
@@ -33,6 +36,9 @@ not yet scoped). See [ADR-001](07-architecture.md#adr-001--backend-for-accounts-
 ---
 
 ## Local entities (on-device SQLite)
+
+Implemented in `mobile/src/db/schema.ts` (Drizzle) as of 2026-07-04; the
+tables below are the source spec.
 
 ### UserProfile
 The single on-device user (one profile per install). Distinct from the backend
