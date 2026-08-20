@@ -45,7 +45,7 @@ Profile → "Complete your profile".
 ---
 
 ## F2 — Exercise library
-**Status:** prototyped
+**Status:** built
 **Spec:** [../docs/01-data-model.md](../docs/01-data-model.md) (Exercise entity)
 
 **Current requirement:** Browse/search 800+ exercises, filter by muscle group
@@ -60,12 +60,25 @@ and equipment. Seeded from an open dataset (free-exercise-db to start).
   local DB so logging works end-to-end now. The full open-dataset import
   remains the requirement; the seed is idempotent and will be replaced by it.
 
+- 2026-08-20 — Seed grown to **58 exercises** and its semantics fixed: the
+  `equipment` array is now a **requirement set** (you need *all* of it), not a
+  list of alternatives — the old rows were ambiguous ("Goblet Squat:
+  dumbbell, kettlebell" read as requiring both, "Romanian Deadlift: barbell,
+  dumbbell" likewise), which would have silently starved the generator. Kit
+  variants are separate rows instead. Coverage now includes bodyweight/band/
+  dumbbell options for every muscle so a `home_minimal` user gets a real
+  program. The seed **reconciles by name on every launch** (inserts new rows,
+  updates changed classification) instead of only running on an empty table,
+  so existing installs pick up the fixes without losing logged history.
+  Library screen is wired to the DB with working search + muscle filter.
+  Full open-dataset import (free-exercise-db) remains the requirement.
+
 **Bugs:** none yet.
 
 ---
 
 ## F3 — Program generator (split)
-**Status:** planned
+**Status:** built
 **Spec:** [../docs/02-split-generator-logic.md](../docs/02-split-generator-logic.md)
 
 **Current requirement:** Rule-based (not ML) generator that maps goal +
@@ -78,12 +91,39 @@ adherence-aware adjustments.
 - 2026-07-02 — Chose rule-based over ML: auditable, needs no training data,
   and avoids suggesting unrealistic goals (user's explicit concern).
 
+- 2026-08-20 — **Built, all five steps of docs/02.** `src/lib/splitGenerator.ts`
+  (pure, dependency-free): step 1 template selection (Full Body / Upper-Lower /
+  undulating U-L / PPL+UL / PPL×2, with beginners steered to simpler templates
+  regardless of requested days), step 2 MEV→MAV volume landmarks biased by goal
+  and experience with MRV as a ceiling check, step 3 exercise selection filtered
+  by equipment and the docs/06 §7 injury map (compound-first ordering, rotation
+  so repeated days differ), step 4 rep bands by goal with a session-length set
+  cap. `src/lib/progression.ts` covers step 5 in full: double progression,
+  deload triggers (weeks-on-program **or** two consecutive multi-lift stalls),
+  and adherence-aware adjustment that suggests fewer days / shorter sessions
+  below 70% completion. Persisted by `src/db/programRepo.ts` into
+  `program` / `program_day` / `program_exercise`; generated automatically at
+  `completeOnboarding()` and back-filled at launch for pre-existing profiles.
+  The generator's `rationale[]` is surfaced on the onboarding "your plan" step,
+  so every prescription is traceable to a rule. 40 unit tests, including a
+  sweep over all 240 goal × experience × equipment × days combinations.
+- 2026-08-20 — Two selection bugs found by running the generator on-device
+  against the real seed, not by the unit tests (both now have regression
+  coverage). (1) With scores tied, ordering fell back to `name.localeCompare`,
+  so a **gym** user was prescribed "Band Chest Press" over "Barbell Bench
+  Press" — fixed by scoring equipment on how loadable it is, since double
+  progression needs a load increment a band cannot give. (2) Compound rotation
+  keyed off the global day index, so in an upper/lower split both lower days
+  hit the same rotation slot and the barbell RDL was never prescribed at all —
+  now keyed off how many times that muscle has already been trained this week,
+  so the first session gets the best option and later ones rotate.
+
 **Bugs:** none yet.
 
 ---
 
 ## F4 — Home + activity tracking
-**Status:** prototyped
+**Status:** built
 **Spec:** [../docs/04-home-logging-ux.md](../docs/04-home-logging-ux.md)
 
 **Current requirement:** Home shows today's ordered workout, streak, and an
@@ -95,12 +135,25 @@ Health Connect.
   Dual ring: green = steps (passive), red = active minutes — surfaces the two
   data worlds the app bridges.
 
+- 2026-08-20 — **Home is real data.** Today's card reads the active program's
+  `ProgramDay` for the current weekday (rest-day state with an ad-hoc option
+  when there isn't one), streak is computed from completed sessions with rest
+  days not breaking it, greeting derives from the account email (no name field
+  on the profile yet). Deload / adherence advice from F3 surfaces as a banner.
+- 2026-08-20 — **Health Connect wired** (ADR-004). `src/lib/healthConnect.ts`
+  reads Steps + ExerciseSession duration; `src/db/activityRepo.ts` upserts one
+  `activity_snapshot` row per day and backfills the trailing week. The ring is
+  now driven by real steps/points against a 10k-step / 100-point goal.
+  Pinned to `react-native-health-connect@4.0.0` and minSdk 26 — see ADR-004 for
+  why the latest version cannot build on Expo 52. **Not yet verified on a
+  physical device**; the grant flow needs real Health Connect data.
+
 **Bugs:** none yet.
 
 ---
 
 ## F5 — Workout logging (scroll-dial)
-**Status:** in-dev
+**Status:** built
 **Spec:** [../docs/04-home-logging-ux.md](../docs/04-home-logging-ux.md)
 
 **Current requirement:** Per-set logging via three scroll wheels (weight /
@@ -119,12 +172,27 @@ dots, exercise substitution, and a completion summary with PRs.
   needs a custom wheel component and stays the target UX (see design-log
   2026-07-04). Sessions are ad-hoc (`program_day_id` null) until F3 exists.
 
+- 2026-08-20 — **Now program-driven.** A session starts against today's
+  `ProgramDay` (`program_day_id` set, no longer always ad-hoc) and shows the
+  planned exercises in order, each with its target sets × rep range and the
+  double-progression prescription for this session ("Hit 10 reps on all 3 sets
+  — go to 62.5 kg"). Sets log against `program_exercise_id`, which is **kept on
+  substitution** so plan-vs-actual and substitution frequency stay visible.
+  Adds a rest timer (compound 120s / isolation 75s, ±15s / skip), off-plan
+  exercise addition, and per-exercise set progress. Ending a session with
+  nothing logged now writes `status = skipped`, not `completed`, so empty
+  sessions no longer inflate adherence and streaks.
+- 2026-08-20 — Interaction is a **+/- stepper**, not the three scroll wheels.
+  It meets the spec's actual requirements (no keyboard, seeded from the last
+  logged value, repeat sets are confirm-only) at a fraction of the code. The
+  wheels remain the target UX; revisit if the tap count annoys.
+
 **Bugs:** none yet.
 
 ---
 
 ## F6 — Progress & analytics
-**Status:** prototyped
+**Status:** built
 **Spec:** [../docs/01-data-model.md](../docs/01-data-model.md) (derived metrics)
 
 **Current requirement:** Bodyweight trend, estimated 1RM/PRs, adherence %, and
@@ -133,6 +201,15 @@ weekly volume per muscle group — all computed on read from logged data.
 **Mutations:**
 - 2026-07-02 — Metrics computed on read for MVP; materialize into a snapshot
   table only if query performance requires it.
+
+- 2026-08-20 — **Wired to real data.** Bodyweight trend from
+  `body_measurement` (with a weigh-in sheet that also recomputes the cached
+  calorie/macro targets, per docs/01), BMI + category per measurement, weekly
+  sets per muscle **logged against planned** (the payoff of keeping plan and
+  actual in separate tables), 2-week adherence % with the F3 advice line,
+  7-day step bars from `activity_snapshot`, and session history with total
+  volume moved. All computed on read as specced — no snapshot table.
+  Estimated-1RM charting is still outstanding; PRs remain per-session only.
 
 **Bugs:** none yet.
 

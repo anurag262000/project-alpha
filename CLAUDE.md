@@ -14,10 +14,15 @@ Personal-use first, structured to be Play-Store-ready later.
 - **Stack:** React Native (Expo, expo-router, TypeScript). App data on-device
   (SQLite + Drizzle), state via Zustand. Backend: Cloudflare Workers + D1 for
   **accounts only** (`backend/auth-worker/`) — see ADR-001.
-- **Status:** planning + design + UI prototype done. The RN app in `mobile/`
-  is mostly **UI-only** (data/calc/DB not wired yet), except **auth**, which is
-  wired to the Cloudflare worker (signup/login/session). Backend is built +
-  tested locally, not yet deployed.
+- **Status:** the core loop is **functional end to end** — onboard → generated
+  split → today's workout → per-set logging → progression → progress. All of it
+  runs on the on-device DB (SQLite + Drizzle); nothing on the main path is
+  mocked. **Auth** (email/password + OTP verification) is wired to the
+  Cloudflare worker, which is **deployed**; real-user email delivery is still
+  blocked on verifying a Resend sending domain. **Health Connect** is wired and
+  the Android build is green, but the on-device grant/read path is unverified.
+  Still unbuilt: nutrition check-in (F8), estimated-1RM charts, and the full
+  open-dataset exercise import (58-row seed for now).
 
 ## Where things live (source of truth = this repo)
 

@@ -196,6 +196,48 @@ Architecture Decision Records — newest first. Copy the template per decision.
   - Immediate pruning (no grace window) — rejected in favor of 14 days;
     storage cost difference is negligible, correctness value is not.
 
+### ADR-004 — Passive activity: Health Connect (read-only), and the compileSdk ceiling it imposes
+- Date: 2026-08-20
+- Status: **accepted** (builds green; on-device grant flow untested — see Consequences).
+- Context: `ActivitySnapshot` (docs/01) was specced from the start as
+  Health-Connect-sourced, but nothing read it — the Home activity ring was
+  hardcoded. Steps/active-minutes are half the product thesis (bridging passive
+  tracking with planned training), so the ring needed a real source.
+- Decision:
+  - **`react-native-health-connect`, read-only.** Two permissions only
+    (`READ_STEPS`, `READ_EXERCISE`); we never write to Health Connect.
+  - **Pinned to 4.0.0, not latest (4.1.3).** 4.1.x depends on
+    `androidx.health.connect:connect-client:1.1.0`, which requires
+    **compileSdk 36 + AGP 8.9.1**. Expo SDK 52 ships **AGP 8.6.0 / compileSdk
+    35**, so 4.1.x fails the build outright. 4.0.0 uses
+    `connect-client:1.1.0-alpha11`, which builds on the current toolchain with
+    the same JS API surface we use.
+  - **minSdkVersion raised 24 → 26** via `expo-build-properties` (the Health
+    Connect client requires API 26+). Set in `app.json` so it survives
+    `expo prebuild`, rather than hand-editing `gradle.properties`.
+  - **Native module loaded lazily** behind `Platform.OS === 'android'` +
+    `try/catch require` (`src/lib/healthConnect.ts`), so iOS, Expo Go and
+    emulators without Health Connect degrade to an `unsupported` state instead
+    of crashing at import time.
+  - **A failed read never overwrites good data**: `readDay()` returns `null` on
+    any failure and `syncToday()` then keeps the previously stored snapshot.
+  - **Points formula** is ours, not in any spec: 100 steps = 1 point, 1 active
+    minute = 2 points, against a 100-point daily goal. Defined in
+    `src/lib/healthConnect.ts`.
+- Consequences: the app is now pinned below the latest Health Connect wrapper
+  until Expo (and its AGP) moves to compileSdk 36 — revisit on the SDK 53+
+  upgrade, at which point 4.1.x becomes available. minSdk 26 drops Android 7.x
+  devices (negligible share). Health Connect has no "active minutes" record, so
+  we aggregate total `ExerciseSession` duration as the nearest equivalent to
+  Google Fit's Move Minutes. **The permission-grant and real-read path has not
+  been exercised on a physical device** — it needs an Android phone with the
+  Health Connect app and real step data; emulators generally have neither.
+- Alternatives considered: **manual step entry** behind the same adapter
+  (rejected by the user in favour of the real integration); **Google Fit REST
+  API** (deprecated, shutting down in favour of Health Connect); **upgrading
+  AGP/compileSdk to take 4.1.3** (rejected — fighting Expo 52's pinned
+  toolchain for no functional gain, since 4.0.0 exposes the same API).
+
 ### ADR-003 — Email verification: OTP over email (Resend), hard gate
 - Date: 2026-07-06
 - Status: **accepted** (built + deployed same day; production sends pending a
