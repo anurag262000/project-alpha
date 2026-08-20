@@ -14,13 +14,26 @@
       "package": "com.projectalpha.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6E7EA"
-      }
+      },
+      "permissions": [
+        "android.permission.health.READ_STEPS",
+        "android.permission.health.READ_EXERCISE"
+      ]
     },
     "plugins": [
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 26
+          }
+        }
+      ],
       "expo-router",
       "expo-sqlite",
       "expo-asset",
-      "expo-font"
+      "expo-font",
+      "react-native-health-connect"
     ],
     "experiments": {
       "typedRoutes": true
