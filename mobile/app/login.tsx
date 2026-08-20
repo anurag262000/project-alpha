@@ -5,7 +5,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Screen, Title, Sub, TextField, PrimaryButton, GhostButton } from '@/components/ui';
 import { useTheme } from '@/theme/ThemeProvider';
 import { useAuth } from '@/store/auth';
-import { ApiError } from '@/lib/api';
+import { ApiError, VerificationRequiredError } from '@/lib/api';
 import { getProfile } from '@/db/profileRepo';
 
 export default function Login() {
@@ -28,6 +28,11 @@ export default function Login() {
       const profile = await getProfile();
       router.replace(profile ? '/home' : '/onboarding/basics');
     } catch (e) {
+      if (e instanceof VerificationRequiredError) {
+        // Unverified account — backend re-sent a code. Route to verification.
+        router.replace({ pathname: '/verify', params: { email: e.email, mode: 'login' } });
+        return;
+      }
       setError(e instanceof ApiError ? e.message : 'Could not log you in.');
     } finally {
       setBusy(false);

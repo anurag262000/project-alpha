@@ -31,10 +31,20 @@ export default function Account() {
     }
     setBusy(true);
     try {
-      if (status !== 'signedIn') await signUp(email, password);
-      await completeOnboarding(draft); // profile + first measurement + screening
-      resetDraft();
-      router.replace('/home');
+      if (status === 'signedIn') {
+        // Already verified & signed in — just persist the plan locally.
+        await completeOnboarding(draft); // profile + first measurement + screening
+        resetDraft();
+        router.replace('/home');
+      } else {
+        // Hard gate: create the account + email a code, then verify. Onboarding
+        // is finalized on the verify screen once the email is confirmed.
+        await signUp(email, password);
+        router.replace({
+          pathname: '/verify',
+          params: { email: email.trim().toLowerCase(), mode: 'signup' },
+        });
+      }
     } catch (e) {
       setError(
         e instanceof ApiError

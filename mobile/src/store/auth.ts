@@ -13,8 +13,13 @@ interface AuthState {
   status: Status;
   /** Restore any persisted session on app start. */
   hydrate: () => Promise<void>;
+  /** Register + trigger a verification email. Does NOT sign in (hard gate). */
   signUp: (email: string, password: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
+  /** Confirm an emailed code → marks verified and signs in. */
+  verifyEmail: (email: string, code: string) => Promise<void>;
+  /** (Re)send a verification code. */
+  resendVerification: (email: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -37,15 +42,27 @@ export const useAuth = create<AuthState>((set, get) => ({
   },
 
   signUp: async (email, password) => {
-    const { token, user } = await api.signup(email, password);
+    // Hard gate: this creates the account and emails a code, but returns no
+    // session. The user becomes signed in only after verifyEmail() succeeds.
+    await api.signup(email, password);
+  },
+
+  signIn: async (email, password) => {
+    // Throws VerificationRequiredError for unverified accounts — the caller
+    // routes to the verify screen.
+    const { token, user } = await api.login(email, password);
     await SecureStore.setItemAsync(TOKEN_KEY, token);
     set({ token, user, status: 'signedIn' });
   },
 
-  signIn: async (email, password) => {
-    const { token, user } = await api.login(email, password);
+  verifyEmail: async (email, code) => {
+    const { token, user } = await api.confirmVerification(email, code);
     await SecureStore.setItemAsync(TOKEN_KEY, token);
     set({ token, user, status: 'signedIn' });
+  },
+
+  resendVerification: async (email) => {
+    await api.requestVerification(email);
   },
 
   signOut: async () => {
