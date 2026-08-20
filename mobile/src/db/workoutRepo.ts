@@ -1,6 +1,8 @@
 /**
- * Workout session + set data access. Sessions are ad-hoc for now
- * (program_day_id null) until the split generator (docs/02) is wired.
+ * Workout session + set data access. A session can be linked to a
+ * program_day (planned) or left ad-hoc (program_day_id null); logged sets
+ * likewise point back at the program_exercise slot they fulfil, which is
+ * what keeps plan-vs-actual and substitution visible later.
  */
 import { and, desc, eq } from 'drizzle-orm';
 import { db } from './client';
@@ -26,11 +28,15 @@ export async function getActiveSession(profileId: string): Promise<WorkoutSessio
   return row ?? null;
 }
 
-export async function startSession(profileId: string): Promise<WorkoutSession> {
+export async function startSession(
+  profileId: string,
+  programDayId?: string | null
+): Promise<WorkoutSession> {
   const [row] = await db
     .insert(workoutSession)
     .values({
       profileId,
+      programDayId: programDayId ?? null,
       date: new Date().toISOString().slice(0, 10),
       startedAt: new Date().toISOString(),
       status: 'in_progress',
@@ -40,9 +46,19 @@ export async function startSession(profileId: string): Promise<WorkoutSession> {
 }
 
 export async function completeSession(sessionId: string): Promise<void> {
+  // docs/04: ending without logging anything is a skip, not a completion —
+  // otherwise adherence and streaks count empty sessions as training.
+  const logged = await db
+    .select({ id: loggedSet.id })
+    .from(loggedSet)
+    .where(eq(loggedSet.sessionId, sessionId))
+    .limit(1);
   await db
     .update(workoutSession)
-    .set({ status: 'completed', completedAt: new Date().toISOString() })
+    .set({
+      status: logged.length > 0 ? 'completed' : 'skipped',
+      completedAt: new Date().toISOString(),
+    })
     .where(eq(workoutSession.id, sessionId));
 }
 
@@ -53,6 +69,8 @@ export interface LogSetInput {
   weightKg: number;
   rpe?: number;
   isWarmup?: boolean;
+  /** Plan slot this set fulfils; stays set even when the exercise is substituted. */
+  programExerciseId?: string | null;
 }
 
 export async function logSet(input: LogSetInput): Promise<LoggedSet> {
@@ -67,6 +85,7 @@ export async function logSet(input: LogSetInput): Promise<LoggedSet> {
     .values({
       sessionId: input.sessionId,
       exerciseId: input.exerciseId,
+      programExerciseId: input.programExerciseId ?? null,
       setIndex: nextIndex,
       reps: input.reps,
       weightKg: input.weightKg,

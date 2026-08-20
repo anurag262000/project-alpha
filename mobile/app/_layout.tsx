@@ -9,7 +9,9 @@ import { useDrizzleStudio } from 'expo-drizzle-studio-plugin';
 import { ThemeProvider, useTheme } from '@/theme/ThemeProvider';
 import { useAuth } from '@/store/auth';
 import { db, sqlite } from '@/db/client';
-import { seedExercisesIfEmpty } from '@/db/seed';
+import { seedExercises } from '@/db/seed';
+import { getProfile } from '@/db/profileRepo';
+import { ensureActiveProgram } from '@/db/programRepo';
 import migrations from '../drizzle/migrations';
 
 function Nav() {
@@ -42,7 +44,14 @@ export default function RootLayout() {
   }, [hydrate]);
 
   useEffect(() => {
-    if (migrated) seedExercisesIfEmpty().then(() => setSeeded(true));
+    if (!migrated) return;
+    (async () => {
+      await seedExercises();
+      // Back-fill a program for profiles that predate the split generator.
+      const profile = await getProfile();
+      if (profile) await ensureActiveProgram(profile);
+      setSeeded(true);
+    })();
   }, [migrated]);
 
   if (migrationError) {
