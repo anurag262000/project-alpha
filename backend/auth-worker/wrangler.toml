@@ -2,9 +2,18 @@ name = "project-alpha-auth-worker"
 main = "src/index.ts"
 compatibility_date = "2024-11-01"
 
+# Upload source maps so runtime errors (dashboard + `wrangler tail`) point at
+# the original src/ files (e.g. routes/auth.ts:30), not bundled line numbers.
+upload_source_maps = true
+
 # DB is Turso (libsql over HTTP), not D1 — see ADR-002. The URL is not a
 # secret; the auth token is:
 #   local dev  → .dev.vars (gitignored)
 #   production → `wrangler secret put TURSO_AUTH_TOKEN`
 [vars]
 TURSO_DATABASE_URL = "libsql://project-alpha-anurag262000.aws-ap-south-1.turso.io"
+# Verification-email sender. Empty → code falls back to Resend's test sender
+# (onboarding@resend.dev), which only delivers to your own Resend account email.
+# Set to your verified domain address once DNS is verified, e.g.
+# RESEND_FROM = "noreply@yourdomain.com". Not secret — safe to commit.
+RESEND_FROM = ""
