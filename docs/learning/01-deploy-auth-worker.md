@@ -4,6 +4,15 @@ The **hands-on** guide: do this, then this. For the "what are these tools"
 background, read [00-serverless-workers-and-wrangler.md](00-serverless-workers-and-wrangler.md)
 first.
 
+> **✅ 2026-07-06 — DEPLOYED.** The worker is now live at
+> `https://project-alpha-auth-worker.projectalphaauth.workers.dev`
+> (workers.dev subdomain: `projectalphaauth`). Hosted Turso DB migrated,
+> all four endpoints smoke-tested in production (signup 201, duplicate 409,
+> login + `/me` 200, bad password / no-token 401). The app's `mobile/.env`
+> points `EXPO_PUBLIC_API_URL` at that URL. Redeploys are just
+> `npx wrangler deploy`. See "What actually happened" at the bottom for the
+> steps that differed from the plan below.
+
 Status when written (2026-07-03): the worker is built and **tested locally**
 (full signup → login → logout cycle passed). It has **not** been deployed to
 Cloudflare yet — that's the human step below. Run everything from
@@ -171,14 +180,48 @@ npx wrangler d1 execute project-alpha-auth --remote --command "SELECT * FROM use
 
 ---
 
-## Where we are right now
+## What actually happened (2026-07-06 deploy)
+
+The real path, and where it differed from the plan above (which still assumed
+D1). Turso replaced steps 2–3 — see [02-turso-libsql-migration.md](02-turso-libsql-migration.md) §7.
+
+1. **Migrate the hosted DB** (no wrangler login needed — drizzle-kit talks to
+   Turso directly with the token in `backend/.env`):
+   ```
+   cd backend/auth-worker && npx drizzle-kit migrate
+   ```
+   `.env` must point `TURSO_DATABASE_URL` at the **hosted** `libsql://…turso.io`
+   URL with `TURSO_AUTH_TOKEN` set (not the local `turso dev` server). The
+   package.json script is `npm run db:migrate` — there is no `db:migrate:remote`
+   script (that name in the cheat sheet below is stale D1 wording); local vs
+   remote is decided by what `.env` points at, per doc 02 §6.
+2. **`npx wrangler login`** — browser OAuth, one-time per machine.
+3. **Set the production secret** (pipe it in so it never hits the terminal):
+   ```
+   grep '^TURSO_AUTH_TOKEN=' ../.env | cut -d= -f2- | npx wrangler secret put TURSO_AUTH_TOKEN
+   ```
+   First `secret put` also **creates the worker shell** on Cloudflare.
+4. **`npx wrangler deploy`.** ⚠️ **New gotcha not in the plan:** a brand-new
+   account has no `workers.dev` subdomain, so the *first* deploy must register
+   one — and that prompt is interactive. A non-interactive `wrangler deploy`
+   (e.g. run by the agent) uploads the code but then **errors** at the publish
+   step. Fix: run `npx wrangler deploy` yourself in a terminal, answer **yes**
+   to "register a workers.dev subdomain," and pick a name (we chose
+   `projectalphaauth`). Subsequent deploys are non-interactive and fine.
+5. **Smoke-test the live URL** with the curls in doc 02 §7 — all four endpoints
+   passed.
+6. **Point the app:** `mobile/.env` →
+   `EXPO_PUBLIC_API_URL=https://project-alpha-auth-worker.projectalphaauth.workers.dev`
+   (gitignored; restart the Expo bundler after changing it).
+
+## Deploy checklist — DONE
 
 - [x] Worker written, typechecks, **smoke-tested locally**.
-- [x] Migration generated (`drizzle/0000_*.sql`) and applied to the **local** DB.
-- [ ] `wrangler login` — needs your Cloudflare account.
-- [ ] `wrangler d1 create` + paste `database_id`.
-- [ ] `db:migrate:remote`.
-- [ ] `wrangler deploy`.
-- [ ] Set `EXPO_PUBLIC_API_URL` in the app.
-
-Next hands-on step whenever you're ready: **Step 1** (`npx wrangler login`).
+- [x] Migration generated (`drizzle/0000_*.sql`) and applied to the local DB.
+- [x] `npx drizzle-kit migrate` against the **hosted** Turso DB.
+- [x] `npx wrangler login`.
+- [x] `npx wrangler secret put TURSO_AUTH_TOKEN` (also created the worker).
+- [x] `npx wrangler deploy` (+ registered `projectalphaauth` subdomain).
+- [x] Production smoke test (signup/login/me/failures).
+- [x] Set `EXPO_PUBLIC_API_URL` in `mobile/.env`.
+- [ ] Manual on-device test: create an account from the app on the emulator.

@@ -184,7 +184,9 @@ adherence %.
 **Current requirement:** Email/password signup and login backed by a
 Cloudflare Worker (`backend/auth-worker/`) over Turso (libsql). Signup step
 sits at the end of onboarding (after "Plan ready"); returning users log in
-from Welcome. Opaque bearer-token session stored in `expo-secure-store`,
+from Welcome. **Email verification is a hard gate** (ADR-003): signup and
+unverified login issue no session until a 6-digit code emailed via Resend is
+confirmed. Opaque bearer-token session stored in `expo-secure-store`,
 restored on launch.
 
 **Mutations:**
@@ -199,6 +201,23 @@ restored on launch.
   `TURSO_AUTH_TOKEN` (secret); drizzle-kit migrates against Turso directly.
   Sign-out row added to the Profile screen; login on a fresh install with no
   local profile routes into onboarding instead of an empty home.
+- 2026-07-04 — **Deployed** to Cloudflare
+  (`project-alpha-auth-worker.projectalphaauth.workers.dev`); hosted Turso DB
+  migrated; app `EXPO_PUBLIC_API_URL` points at it. Worker source later split
+  into `routes/` + `lib/` modules with source maps.
+- 2026-07-06 — **Added email OTP verification as a hard gate** (ADR-003).
+  Backend: new `email_codes` table + `users.email_verified`; endpoints
+  `POST /verify/request` and `/verify/confirm`; `/signup` now returns
+  `{ verificationRequired }` (no token) and emails a 6-digit code via **Resend**
+  (`lib/email.ts` + `lib/verification.ts`, `lib/otp.ts`); `/login` on an
+  unverified account returns `403 { verificationRequired }` and re-sends.
+  Code policy: 10-min TTL, ≤5 attempts, 60-s resend cooldown, stored hashed.
+  App: new `app/verify.tsx` (code entry + resend countdown); `signUp` no longer
+  signs in — it routes to the verify screen, which finalizes onboarding
+  (signup) or routes by profile (login) after `verifyEmail()`. `useAuth` gains
+  `verifyEmail`/`resendVerification`; `api.ts` gains
+  `VerificationRequiredError`. Sender is env-configurable (`RESEND_FROM`);
+  production delivery to arbitrary emails pending a verified Resend domain.
 
 **Bugs:** none yet.
 

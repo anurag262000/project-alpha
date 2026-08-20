@@ -1,8 +1,9 @@
 # Auth flow (F9)
 
 Signup lands at the end of onboarding; login is a separate entry from Welcome.
-Session token lives in `expo-secure-store`, restored on launch by
-`useAuth.hydrate()`.
+Email verification is a **hard gate** (2026-07-06): signup/login issue **no
+session** until a 6-digit code emailed via Resend is confirmed. Session token
+lives in `expo-secure-store`, restored on launch by `useAuth.hydrate()`.
 
 ## Screens & session
 
@@ -18,26 +19,42 @@ flowchart TD
   Onb --> Ready[Plan ready]
   Ready -- Start training --> Account[Create account]
 
-  Account -- signUp OK --> Home
-  Login -- signIn OK --> Home
+  Account -- signUp: code emailed --> Verify[Check email<br/>enter 6-digit code]
+  Login -- verified --> Home
+  Login -- unverified: code emailed --> Verify
+
+  Verify -- confirm OK<br/>signup: completeOnboarding --> Home
+  Verify -- confirm OK<br/>login: has profile? --> Home
+  Verify -- Resend code --> Verify
 ```
 
-## Signup / login request
+## Signup / verify / login request
 
 ```mermaid
 sequenceDiagram
   participant App as Mobile (useAuth)
   participant W as auth-worker
-  participant D1 as D1
+  participant DB as Turso
+  participant R as Resend
 
-  App->>W: POST /signup or /login {email, password}
-  W->>D1: find / insert user (PBKDF2 verify or hash)
-  W->>D1: insert sessions row (token, expires_at)
+  App->>W: POST /signup {email, password}
+  W->>DB: insert user (email_verified=false, PBKDF2 hash)
+  W->>DB: upsert email_codes (hashed 6-digit code, 10-min TTL)
+  W->>R: send verification email (RESEND_FROM → to)
+  W-->>App: 201 { verificationRequired, email }  (no token)
+
+  App->>W: POST /verify/confirm {email, code}
+  W->>DB: check code (TTL, ≤5 attempts) → set email_verified=true
+  W->>DB: insert sessions row (token, expires_at)
   W-->>App: { token, user }
   App->>App: SecureStore.setItem(token); status = signedIn
 
-  Note over App,W: later, on launch
-  App->>W: GET /me (Bearer token)
-  W->>D1: token → session → user (check expiry)
-  W-->>App: { user } or 401
+  Note over App,W: unverified login is blocked
+  App->>W: POST /login {email, password}
+  W->>DB: verify password; email_verified?
+  W->>R: (if unverified) re-send code
+  W-->>App: 403 { verificationRequired, email } — else { token, user }
 ```
+
+Policy: code is 6 digits, 10-minute TTL, ≤5 attempts, 60-second resend
+cooldown; codes are stored **hashed** (PBKDF2), one active code per user.

@@ -195,3 +195,40 @@ Architecture Decision Records — newest first. Copy the template per decision.
     everything forever."
   - Immediate pruning (no grace window) — rejected in favor of 14 days;
     storage cost difference is negligible, correctness value is not.
+
+### ADR-003 — Email verification: OTP over email (Resend), hard gate
+- Date: 2026-07-06
+- Status: **accepted** (built + deployed same day; production sends pending a
+  verified Resend sending domain — see Consequences).
+- Context: Signup (ADR-001) created an account and issued a session immediately
+  from just an email + password, with no proof the user controls that address.
+  That blocks trustworthy password reset and lets anyone register someone
+  else's email. We want ownership confirmed before an account is usable.
+- Decision:
+  - **Mechanism:** a 6-digit numeric one-time code emailed on signup. Policy:
+    10-minute TTL, ≤5 attempts, 60-second resend cooldown, **one active code
+    per user**. Codes are stored **hashed** (same PBKDF2 as passwords), never
+    plaintext — a DB leak can't reveal a live code.
+  - **Gate: hard.** No session is issued until the code is confirmed.
+    `/signup` returns `{ verificationRequired }` with no token; `/login` on an
+    unverified account returns `403 { verificationRequired }` and re-sends a
+    code. The session (ADR-001's bearer token) is minted only by
+    `/verify/confirm`. New endpoints: `POST /verify/request`, `/verify/confirm`;
+    new `email_codes` table + `users.email_verified` column.
+  - **Provider: Resend**, called via its REST API with `fetch` (no SDK
+    dependency — leanest on the Workers runtime). Key is a secret
+    (`RESEND_API_KEY`); sender is a non-secret var (`RESEND_FROM`) so the
+    from-address swaps without a code change.
+  - **Resilience:** an email-send failure does **not** 500 signup/login — the
+    code is persisted first, so the client can resend; failures are logged.
+- Consequences: adds an email provider as a new external dependency in the auth
+  path. Until a sending domain is verified in Resend, the test sender
+  (`onboarding@resend.dev`) only delivers to the account owner's own email —
+  so real-user verification is blocked on that DNS step (`RESEND_FROM` flip).
+  Hard gate means an unverified user cannot use the app at all, by design.
+- Alternatives considered: **soft gate** (let unverified users in, nudge to
+  verify) — rejected here in favor of stricter, more production-like behavior,
+  though it's a one-flag change if drop-off becomes an issue; **magic-link**
+  instead of a code (rejected — deep-linking back into the RN app is more
+  moving parts than typing 6 digits); **Cloudflare Email Service / SES**
+  (deferred — Resend was the user's choice and is quick to stand up).

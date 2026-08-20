@@ -20,10 +20,15 @@ Read in order:
    the URL+token connection model vs bindings, where each config value lives
    (`[vars]` / secret / `.dev.vars` / `.env`), local dev with `turso dev`,
    drizzle-kit migrations, and the updated deploy path.
+4. [04-worker-structure-and-bundling.md](04-worker-structure-and-bundling.md)
+   — **code layout.** Why the dashboard shows one bundled `index.js`, Workers
+   vs Lambda (one deploy + in-code routing, not gateway-per-function), the
+   modular `src/` tree we use (routes/ + lib/), source maps, and when to split
+   into multiple workers.
 
 ## Mobile (on-device data)
 
-4. [03-expo-sqlite-drizzle.md](03-expo-sqlite-drizzle.md) — **on-device
+5. [03-expo-sqlite-drizzle.md](03-expo-sqlite-drizzle.md) — **on-device
    SQLite in the Expo app.** drizzle + expo-sqlite wiring, bundling `.sql`
    migrations through Metro/Babel, self-migrating on launch, seeding, and
    three real gotchas (Hermes has no `crypto.randomUUID`; stale device DB vs
