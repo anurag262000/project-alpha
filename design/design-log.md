@@ -6,6 +6,92 @@ When the design changes, add an entry here — this is the "why" behind
 
 ---
 
+## 2026-08-21 — Brand mark lands; form keeps its labelled fields
+
+- **Real logo in place of the placeholder.** `mobile/assets/main.svg` — a
+  glass squircle carrying an "F" whose lower arm becomes an ascending pulse,
+  with the drive-red signal dot — is now the app icon and the splash. It reads
+  as the design system in miniature: near-black glass, one red accent, no
+  decoration. Rendered to PNG with headless Chrome; the layers are generated
+  from the one SVG (full icon for iOS, mark-only foreground plus full-bleed
+  gradient background for Android's adaptive mask, mark-only for the splash),
+  so the source of truth stays a single vector file.
+- **Fixed a rendering bug in the mark.** Both bars of the "F" are perfectly
+  horizontal, giving them a zero-height bounding box; `mark-grad` used the
+  default `objectBoundingBox` units, which the SVG spec makes degenerate in
+  that case, so renderers dropped both elements and the logo came out as an
+  "L". The gradient is now `userSpaceOnUse` across the mark's box — which also
+  gives one continuous sheen instead of restarting per path.
+- **The labelled-field form stays.** The settings-style row list from the
+  entry below was reverted at the client's call: uppercase label above each
+  input on its own soft surface is the established form language here, and
+  compactness alone wasn't worth trading it for. The behavioural fixes it came
+  with all survive — the dial opens from its field, cm/ft sits inline, sheets
+  are opaque, and the step still fits without scrolling (~710dp on a 960dp
+  screen). `Row`/`FieldGroup` were deleted rather than left lying around.
+
+## 2026-08-21 — About you: one screen, pickers in sheets
+
+Revision of the same day's input work below, after seeing it on a device.
+
+- **The step now fits without scrolling** (~614dp of content on a 960dp
+  screen). The five inputs stopped being five floating surfaces separated by
+  gaps and became one glass panel of hairline-separated rows (`FieldGroup` +
+  `Row`) — label left, control right. Grouping is what bought the space back:
+  four gaps, four borders and four stacked labels disappear, and a fixed row
+  height makes the stack scan as one list instead of five objects.
+- **The weight dial moved into a bottom sheet, opened by tapping the row.**
+  Inline, it was permanently occupying ~330dp for a value that gets set once,
+  and — being a vertical scroller inside a vertical page — it swallowed the
+  drag, so the screen couldn't be scrolled past it. Out of the page, that
+  conflict cannot happen at all. The row shows the value; the wheels appear
+  only while editing.
+- **Unit toggles no longer get their own line.** cm/ft sits inline in the
+  height row; kg/lb moved into the weight sheet, where the choice is made in
+  the same place as the value. A unit switch is a modifier on a field, not a
+  field of its own, and it should not cost a row.
+- **Sheets are the opaque `card` surface, not glass.** The calendar was
+  translucent over the ambient glow and genuinely hard to read. This isn't a
+  departure from the material: design-system.md already reserves glass for
+  containers and makes anything needing contrast and affordance solid. Added a
+  `card` token (`#FFFFFF` light, `#16181C` dark).
+- Copy: "How sure is that weight?" → **"Weight is"** with Estimated/Measured,
+  which reads as the sentence it completes and fits on one line.
+
+## 2026-08-21 — Onboarding inputs + real ambient glow + app icon
+
+- **Ambient blobs now actually diffuse.** The prototype's blobs are
+  `filter: blur(55px)` at 12–18% opacity; React Native has no such filter, so
+  the app was drawing hard-edged 12%-opacity circles — a visible disc, not a
+  glow. Replaced with a `react-native-svg` radial gradient that fades to
+  transparent (`Glow` in `mobile/src/components/ui.tsx`), which is the same
+  optical result without an offscreen blur pass. Peak opacity is a theme token
+  (`glowOpacity`: 0.30 light / 0.38 dark) — higher than the old flat value
+  because a gradient's average opacity is far below its centre.
+- **Date of birth is a calendar, not a typed `YYYY-MM-DD` string** (closing the
+  polish item flagged on 2026-07-04). Custom glass month grid in a modal rather
+  than the OS date dialog: the native picker can't be themed, and a DOB needs
+  fast year jumps, which the month/year spinner pair gives. Future dates are
+  disabled; the view opens 25 years back so nobody pages through 300 months.
+- **Height accepts feet + inches**, switchable with the same `Segmented`
+  control used elsewhere. Centimetres stay the single stored unit — imperial is
+  a display/entry mode only, converted on the way in — so nothing downstream
+  (BMI, BMR, the split generator) has to know a unit exists.
+- **Weight is the first real scroll dial** — two snapping wheels (whole + a
+  fraction column of grams in kg, tenths in lb) under the prototype's ink
+  selection band, with kg/lb switching. Same reasoning as height: kilograms are
+  what get stored. This is the dial component F5's logging spec has been
+  waiting on; the stepper there can adopt it once it's proven here.
+- **The app finally has an icon.** Ink square, the welcome screen's
+  lightning-bolt mark, and the red/green ambient glow of the app itself, so the
+  launcher matches the product. Placeholder-grade in the sense that it's
+  generated geometry, not a drawn logo — replace when there's a real mark.
+  Android needs the glow as its own `adaptiveIcon.backgroundImage` layer: it
+  ignores `icon.png` and composites the foreground over the background, so with
+  only a `backgroundColor` the mark lands on flat ink and the glow is lost. The
+  background layer's glow centres are pulled inward, since the adaptive mask
+  crops roughly the outer 18% of the canvas.
+
 ## 2026-07-04 — Functional logging + real-data screens (interim interactions)
 
 - **Set logging is keyboard-entry for now, not the scroll-dial.** The dial

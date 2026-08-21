@@ -6,14 +6,18 @@
     "orientation": "portrait",
     "scheme": "projectalpha",
     "userInterfaceStyle": "automatic",
+    "icon": "./assets/icon.png",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "com.projectalpha.app"
     },
     "android": {
       "package": "com.projectalpha.app",
       "adaptiveIcon": {
-        "backgroundColor": "#E6E7EA"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundImage": "./assets/adaptive-icon-background.png",
+        "backgroundColor": "#101114"
       },
       "permissions": [
         "android.permission.health.READ_STEPS",
@@ -33,7 +37,16 @@
       "expo-sqlite",
       "expo-asset",
       "expo-font",
-      "react-native-health-connect"
+      "react-native-health-connect",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
+          "backgroundColor": "#101114"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

@@ -11,6 +11,7 @@ import {
   type TextInputProps,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
+import Svg, { Defs, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme/ThemeProvider';
 import { radius } from '@/theme/tokens';
@@ -33,16 +34,10 @@ export function Screen({
       {ambient !== 'none' && (
         <>
           {(ambient === 'default' || ambient === 'red') && (
-            <View
-              pointerEvents="none"
-              style={[styles.blob, { backgroundColor: theme.red, top: -40, right: -50 }]}
-            />
+            <Glow color={theme.red} style={{ top: -160, right: -170 }} />
           )}
           {(ambient === 'default' || ambient === 'green') && (
-            <View
-              pointerEvents="none"
-              style={[styles.blob, { backgroundColor: theme.green, bottom: 40, left: -60 }]}
-            />
+            <Glow color={theme.green} style={{ bottom: -80, left: -180 }} />
           )}
         </>
       )}
@@ -52,6 +47,41 @@ export function Screen({
         </View>
       </SafeAreaView>
       {bottomNav}
+    </View>
+  );
+}
+
+/**
+ * Soft ambient glow. React Native has no `filter: blur()`, so the prototype's
+ * blurred circle is drawn as a radial gradient that fades to transparent —
+ * same look, no offscreen blur pass.
+ */
+export function Glow({
+  color,
+  size = 460,
+  style,
+}: {
+  color: string;
+  size?: number;
+  style?: StyleProp<ViewStyle>;
+}) {
+  const { theme } = useTheme();
+  // Gradient ids are global to the SVG renderer, so keep them unique per
+  // instance — and strip useId's colons, which aren't valid in a fragment ref.
+  const id = React.useId().replace(/[^a-zA-Z0-9]/g, '');
+  return (
+    <View pointerEvents="none" style={[{ position: 'absolute', width: size, height: size }, style]}>
+      <Svg width={size} height={size}>
+        <Defs>
+          <RadialGradient id={id} cx="50%" cy="50%" rx="50%" ry="50%">
+            <Stop offset="0" stopColor={color} stopOpacity={theme.glowOpacity} />
+            <Stop offset="0.45" stopColor={color} stopOpacity={theme.glowOpacity * 0.5} />
+            <Stop offset="0.75" stopColor={color} stopOpacity={theme.glowOpacity * 0.14} />
+            <Stop offset="1" stopColor={color} stopOpacity={0} />
+          </RadialGradient>
+        </Defs>
+        <Rect width={size} height={size} fill={`url(#${id})`} />
+      </Svg>
     </View>
   );
 }
@@ -205,17 +235,66 @@ export function TextField({
   );
 }
 
+/**
+ * Uppercase label above a soft field surface. Pass `onPress` when the field
+ * opens a picker rather than taking keyboard input.
+ */
+export function LabeledField({
+  label,
+  children,
+  onPress,
+  error,
+}: {
+  label: string;
+  children: React.ReactNode;
+  onPress?: () => void;
+  error?: string;
+}) {
+  const { theme } = useTheme();
+  const surface = (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        minHeight: 50,
+        paddingVertical: 6,
+        paddingHorizontal: 14,
+        borderRadius: 14,
+        backgroundColor: theme.fieldBg,
+        borderWidth: 1,
+        borderColor: error ? theme.red : theme.glassBorder,
+        gap: 10,
+      }}
+    >
+      {children}
+    </View>
+  );
+  return (
+    <View>
+      <Cap style={{ marginBottom: 8, marginLeft: 4 }}>{label}</Cap>
+      {onPress ? <Pressable onPress={onPress}>{surface}</Pressable> : surface}
+      {error ? (
+        <Text style={{ fontSize: 12, color: theme.redText, marginTop: 6, marginLeft: 4 }}>{error}</Text>
+      ) : null}
+    </View>
+  );
+}
+
 /** Single-select segmented control. */
 export function Segmented<T extends string>({
   options,
   value,
   onChange,
   style,
+  compact = false,
 }: {
   options: { label: string; value: T }[];
   value: T;
   onChange: (v: T) => void;
   style?: StyleProp<ViewStyle>;
+  /** Tighter track for sitting inline inside a `Row`. */
+  compact?: boolean;
 }) {
   const { theme } = useTheme();
   return (
@@ -226,8 +305,8 @@ export function Segmented<T extends string>({
           backgroundColor: theme.fieldBg,
           borderWidth: 1,
           borderColor: theme.glassBorder,
-          borderRadius: 12,
-          padding: 3,
+          borderRadius: compact ? 10 : 12,
+          padding: compact ? 2 : 3,
           gap: 2,
         },
         style,
@@ -242,12 +321,13 @@ export function Segmented<T extends string>({
             style={{
               flex: 1,
               alignItems: 'center',
-              paddingVertical: 7,
-              borderRadius: 9,
+              paddingVertical: compact ? 5 : 7,
+              paddingHorizontal: compact ? 8 : 0,
+              borderRadius: compact ? 8 : 9,
               backgroundColor: on ? theme.ink : 'transparent',
             }}
           >
-            <Text style={{ fontSize: 13, fontWeight: on ? '500' : '400', color: on ? theme.onInk : theme.textSecondary }}>
+            <Text style={{ fontSize: compact ? 12 : 13, fontWeight: on ? '500' : '400', color: on ? theme.onInk : theme.textSecondary }}>
               {o.label}
             </Text>
           </Pressable>
@@ -257,12 +337,3 @@ export function Segmented<T extends string>({
   );
 }
 
-const styles = StyleSheet.create({
-  blob: {
-    position: 'absolute',
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    opacity: 0.12,
-  },
-});

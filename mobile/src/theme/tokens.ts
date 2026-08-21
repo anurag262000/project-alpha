@@ -12,6 +12,8 @@ export interface Theme {
   // surfaces
   canvas: string; // page / device background
   glassBg: string; // frosted panel fill (used with a BlurView underneath)
+  card: string; // opaque elevated surface — sheets/pickers, where glass would
+                // lose legibility against the ambient glow (design-system.md)
   glassBorder: string;
   fieldBg: string;
   fillSoft: string; // subtle inset fill (e.g. macro chips)
@@ -34,12 +36,15 @@ export interface Theme {
   // blur radius for glass surfaces (expo-blur intensity is 0-100)
   blurIntensity: number;
   blurTint: 'light' | 'dark' | 'default';
+  /** Peak opacity at the centre of an ambient glow (it falls off to 0). */
+  glowOpacity: number;
 }
 
 export const light: Theme = {
   name: 'light',
   canvas: '#E6E7EA',
   glassBg: 'rgba(255,255,255,0.55)',
+  card: '#FFFFFF',
   glassBorder: 'rgba(255,255,255,0.6)',
   fieldBg: 'rgba(255,255,255,0.5)',
   fillSoft: 'rgba(20,20,25,0.06)',
@@ -57,12 +62,14 @@ export const light: Theme = {
   track: 'rgba(20,20,25,0.08)',
   blurIntensity: 40,
   blurTint: 'light',
+  glowOpacity: 0.3,
 };
 
 export const dark: Theme = {
   name: 'dark',
   canvas: '#0A0B0D',
   glassBg: 'rgba(255,255,255,0.06)',
+  card: '#16181C', // "graphite" elevated surface from the dark exploration
   glassBorder: 'rgba(255,255,255,0.10)',
   fieldBg: 'rgba(255,255,255,0.05)',
   fillSoft: 'rgba(255,255,255,0.06)',
@@ -80,6 +87,7 @@ export const dark: Theme = {
   track: 'rgba(255,255,255,0.08)',
   blurIntensity: 30,
   blurTint: 'dark',
+  glowOpacity: 0.38,
 };
 
 export const themes: Record<ThemeName, Theme> = { light, dark };
