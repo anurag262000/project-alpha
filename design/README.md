@@ -12,6 +12,11 @@ the finalized design system, and the runnable prototype.
   and the reasoning behind them (theme direction changes, material choices,
   what was tried and rejected). Read this to understand *why* the design is
   the way it is.
+- [icons/](icons/) — the app's own icon set: `icons.json` (source),
+  `svg/` + `sprite.svg` (for design tools), `gallery.html` (review sheet) and
+  `build.mjs`, which regenerates all of it plus the app's TS modules.
+- [anatomy/](anatomy/) — `muscles.json` (source) and the generated
+  `body-front.svg` / `body-back.svg` muscle maps.
 - [prototype/](prototype/) — self-contained clickable HTML prototype of the
   full screen set, with a light/dark toggle. This is the finalized visual
   reference for building the app.

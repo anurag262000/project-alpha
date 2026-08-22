@@ -115,6 +115,45 @@ layer beneath. Native RN implementation uses `expo-blur` (`BlurView`) or
 - **Charts** — trend line green when positive; volume bars color only the 1–2
   highlighted muscles (red/green), rest neutral gray.
 
+## Iconography & anatomy
+
+The app draws its own icons — no icon font, no third-party set. Source of
+truth: [icons/icons.json](icons/icons.json) and
+[../design/anatomy/muscles.json](anatomy/muscles.json); `node
+design/icons/build.mjs` regenerates every consumer (individual SVGs, a sprite,
+the gallery, and the two generated TS modules the app imports). Review sheet:
+[icons/gallery.html](icons/gallery.html).
+
+**Icon rules**
+
+- 24px grid, **1.75 stroke**, round caps and joins, `currentColor`.
+- Line icons only. Solid fills are reserved for marks that must read as a
+  single dense shape at 16px (play, the three-dot menu, an info/alert dot).
+- Optical weight over geometric truth: an icon fills the 24 box to ~20px, and
+  the stroke never doubles back on itself at small sizes.
+- Colour follows the same rule as everything else — icons are ink/grey unless
+  the *data* they carry is drive (red) or progress (green).
+- Named for what they mean in this app (`streak`, `rest-timer`, `substitute`),
+  not for what they draw. Nine categories, one per place they're used.
+
+**Anatomy**
+
+- Two bodies (front, back) on a `0 0 240 520` box, 12 addressable groups whose
+  keys are the `exercise.primaryMuscle` values plus `traps` and `forearms`.
+- Chart-style, not silhouette: every muscle belly is its own shape (both pec
+  heads, four ab rows, serratus slabs, delt heads, quad heads, gastroc heads)
+  with a dark outline (`3.2` body, `2.4` muscle), so the anatomy reads at
+  120px and rewards a look at 400px.
+- Shapes are authored for one half and mirrored about x=120, so the figure is
+  symmetric by construction and a muscle is edited once.
+- States: neutral grey, **primary = red**, **secondary = red at 45%**. A
+  muscle map is data, which is what earns it the accent.
+- `splits` in the JSON name the muscle sets for full-body / upper / lower /
+  push / pull / legs / arms / core, so a split card renders from its name.
+
+In the app: `<Icon name="chevron-right" />` and `<BodyMap split="pull"
+view="both" />` (`mobile/src/components/`).
+
 ## Reviewed screens (v0 mockups)
 
 Home · in-workout logging (scroll-dial) · onboarding goal-select · progress —

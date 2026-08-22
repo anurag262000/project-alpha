@@ -32,6 +32,8 @@ project-alpha/
 ├── design/              how it looks & feels (canonical — base for all UI)
 │   ├── design-system.md     canonical visual language (light glass, tokens)
 │   ├── design-log.md        dated design decisions + reasoning
+│   ├── icons/               own icon set: icons.json → svg/, sprite, gallery
+│   ├── anatomy/             muscle maps: muscles.json → body-front/back.svg
 │   └── prototype/           runnable clickable HTML prototype (light + dark)
 ├── features/            what it does, over time
 │   └── feature-log.md       per-feature requirements, mutations, and bugs

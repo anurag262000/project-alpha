@@ -6,6 +6,46 @@ When the design changes, add an entry here — this is the "why" behind
 
 ---
 
+## 2026-08-22 — Our own icons, and a body that knows its muscles
+
+Replaces `@expo/vector-icons` (MaterialCommunityIcons) as the source of app
+iconography. Sheet: [icons/gallery.html](icons/gallery.html).
+
+- **Why draw them.** A borrowed set is drawn to someone else's grid and weight,
+  and it has no icon for the things this app is actually about — RPE, a rest
+  timer, a set substitution, a streak, MEV-vs-MAV volume. It also cost us two
+  bugs already (B3, B4): the font loads asynchronously and `createIconSet`
+  renders an empty `<Text/>` until it resolves, silently. Inline SVG paths have
+  no load step, so an icon cannot fail to appear.
+- **One source, generated consumers.** `icons.json` and `muscles.json` are the
+  only files anyone edits; `build.mjs` writes the individual SVGs, the sprite,
+  the gallery and the two `*.gen.ts` modules the app imports. Design tools and
+  the app can never drift apart, because neither is authored.
+- **86 icons in nine categories**, one per place they're used — the four tabs,
+  chevrons, actions, onboarding fields, activity/goal choices, the eight
+  equipment values, the session, the metrics, and status. 24px grid, 1.75
+  stroke, round caps; solid fills only where a mark must read as one dense
+  shape at 16px.
+- **The anatomy is data, not an illustration.** Two bodies, 12 muscle groups
+  keyed to `exercise.primaryMuscle`, authored as a half and mirrored about the
+  spine. Primary = red, secondary = red at 45%, everything else grey — the
+  accent rule holding, because a worked muscle *is* intensity.
+- **Drawn belly by belly, not as blobs.** First pass was one rounded shape per
+  group; it read as a gingerbread man. The reference the user brought (a
+  chart-style torso with each head outlined) is the right register for
+  something you're meant to *learn* from: both pec heads, four rows of rectus
+  abdominis, three serratus slabs, the oblique, anterior and lateral delt,
+  long and lateral triceps, three quad heads, two gastrocnemius heads and the
+  soleus — 30-odd shapes per view, each with a dark outline so the separation
+  survives at 120px.
+- **Splits render from their name.** `<BodyMap split="pull" view="both" />`
+  lights lats and biceps on the back and nothing on the front, so a day card,
+  the plan screen and the exercise sheet all show the same truth from the same
+  source.
+- Deliberately not solved: per-exercise animation frames. The demo loop on the
+  exercise sheet stays a free-exercise-db image; drawing 900 movements by hand
+  is not a design system, it's a career.
+
 ## 2026-08-22 — Post-onboarding handoff: four stages, two sheets
 
 Designed as a clickable spec in
