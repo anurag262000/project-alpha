@@ -7,7 +7,7 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { useAuth } from '@/store/auth';
 import { useOnboarding } from '@/store/onboarding';
 import { ApiError } from '@/lib/api';
-import { completeOnboarding, getProfile } from '@/db/profileRepo';
+import { getProfile } from '@/db/profileRepo';
 
 const RESEND_COOLDOWN = 60; // seconds — mirrors the backend cooldown
 
@@ -41,12 +41,12 @@ export default function Verify() {
     setBusy(true);
     try {
       await verifyEmail(email, code.trim());
-      // Verified + signed in. Finalize onboarding on the signup path; on login
-      // just route by whether this device already has a profile.
+      // Verified + signed in. The signup path still owes the user their plan,
+      // so it hands off to the plan screen, which is what calls
+      // completeOnboarding(). On login, just route by whether this device
+      // already has a profile.
       if (mode === 'signup') {
-        await completeOnboarding(draft);
-        resetDraft();
-        router.replace('/home');
+        router.replace('/onboarding/plan');
       } else {
         const profile = await getProfile();
         router.replace(profile ? '/home' : '/onboarding/basics');

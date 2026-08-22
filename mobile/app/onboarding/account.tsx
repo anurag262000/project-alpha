@@ -7,7 +7,6 @@ import { useTheme } from '@/theme/ThemeProvider';
 import { useAuth } from '@/store/auth';
 import { ApiError } from '@/lib/api';
 import { useOnboarding } from '@/store/onboarding';
-import { completeOnboarding } from '@/db/profileRepo';
 
 export default function Account() {
   const router = useRouter();
@@ -32,10 +31,9 @@ export default function Account() {
     setBusy(true);
     try {
       if (status === 'signedIn') {
-        // Already verified & signed in — just persist the plan locally.
-        await completeOnboarding(draft); // profile + first measurement + screening
-        resetDraft();
-        router.replace('/home');
+        // Already verified & signed in — go straight to the plan handoff,
+        // which is what writes the profile.
+        router.replace('/onboarding/plan');
       } else {
         // Hard gate: create the account + email a code, then verify. Onboarding
         // is finalized on the verify screen once the email is confirmed.
@@ -75,11 +73,11 @@ export default function Account() {
           >
             <MaterialCommunityIcons name="shield-check" size={26} color={theme.onInk} />
           </View>
-          <Title style={{ fontSize: 26, marginTop: 18 }}>Save your plan</Title>
+          <Title style={{ fontSize: 26, marginTop: 18 }}>Create your account</Title>
           <Sub>
             {status === 'signedIn'
-              ? 'You’re signed in — save your plan to this device and start training.'
-              : 'Create an account so your program, logs, and progress stay yours across devices.'}
+              ? 'You’re signed in — next up is the plan we built from your answers.'
+              : 'One screen, then your plan. An account keeps your program, logs, and progress yours across devices.'}
           </Sub>
 
           <View style={{ gap: 14, marginTop: 24, display: status === 'signedIn' ? 'none' : 'flex' }}>

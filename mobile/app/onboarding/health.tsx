@@ -90,7 +90,7 @@ export default function Health() {
               parqAnswers: PARQ.map((_, i) => answers[i] === 'yes'),
               injuries: injuries.filter((x) => x !== 'None'),
             });
-            router.push('/onboarding/ready');
+            router.push('/onboarding/account');
           }}
         />
       </View>

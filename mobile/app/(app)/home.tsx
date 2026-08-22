@@ -5,17 +5,19 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Screen, Glass, Cap, PrimaryButton } from '@/components/ui';
 import { BottomNav } from '@/components/BottomNav';
 import { ActivityRings } from '@/components/charts';
+import { WeekStrip, shortDayLabel, DAY_NAMES } from '@/components/plan';
 import { useTheme } from '@/theme/ThemeProvider';
 import { useAuth } from '@/store/auth';
 import { getProfile } from '@/db/profileRepo';
 import {
   currentStreak,
+  getProgramDays,
   getProgramStatus,
   getTodaysWorkout,
   type ProgramStatus,
   type TodaysWorkout,
 } from '@/db/programRepo';
-import { getActiveSession } from '@/db/workoutRepo';
+import { getActiveSession, recentSessions } from '@/db/workoutRepo';
 import { syncToday } from '@/db/activityRepo';
 import {
   DAILY_POINTS_GOAL,
@@ -24,9 +26,7 @@ import {
   requestAccess,
   type HealthConnectState,
 } from '@/lib/healthConnect';
-import type { ActivitySnapshot, Profile } from '@/db/schema';
-
-const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+import type { ActivitySnapshot, Profile, ProgramDay } from '@/db/schema';
 
 function greeting(hour: number): string {
   if (hour < 12) return 'Good morning';
@@ -54,6 +54,10 @@ export default function Home() {
   const [hcState, setHcState] = useState<HealthConnectState>('unsupported');
   const [streak, setStreak] = useState(0);
   const [hasActiveSession, setHasActiveSession] = useState(false);
+  const [programDays, setProgramDays] = useState<ProgramDay[]>([]);
+  // First run = the plan is accepted but nothing has been logged against it.
+  // Today re-introduces the plan until that changes (docs/05 §4).
+  const [firstRun, setFirstRun] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
@@ -61,16 +65,19 @@ export default function Home() {
     if (!p) return setLoading(false);
     setProfile(p);
 
-    const [workout, programStatus, streakDays, active] = await Promise.all([
+    const [workout, programStatus, streakDays, active, logged] = await Promise.all([
       getTodaysWorkout(p.id),
       getProgramStatus(p.id, p),
       currentStreak(p.id, p.trainingDays),
       getActiveSession(p.id),
+      recentSessions(p.id, 1),
     ]);
     setToday(workout);
     setStatus(programStatus);
     setStreak(streakDays);
     setHasActiveSession(active !== null);
+    setFirstRun(logged.length === 0);
+    setProgramDays(workout ? await getProgramDays(workout.program.id) : []);
 
     const hc = await getState();
     setHcState(hc);
@@ -106,6 +113,21 @@ export default function Home() {
   const activeMinutes = activity?.activeMinutes ?? 0;
   const dayLabel = today?.day?.label ?? 'Rest day';
 
+  const weekLabels: (string | null)[] = Array(7).fill(null);
+  for (const d of programDays) {
+    if (d.weekday != null) weekLabels[d.weekday] = shortDayLabel(d.label);
+  }
+  // The next training day, for the rest-day action — never a dead end.
+  const nextDay =
+    today?.isRestDay
+      ? [...programDays]
+          .filter((d) => d.weekday != null)
+          .sort(
+            (a, b) =>
+              ((a.weekday! - now.getDay() + 7) % 7 || 7) - ((b.weekday! - now.getDay() + 7) % 7 || 7)
+          )[0] ?? null
+      : null;
+
   return (
     <Screen ambient="default" bottomNav={<BottomNav active="home" />}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 90 }}>
@@ -129,15 +151,13 @@ export default function Home() {
               {`${greeting(now.getHours())},\n${displayName(user?.email)}`}
             </Text>
           </View>
-          {streak > 0 && (
-            <Glass
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 8, paddingHorizontal: 12 }}
-              r={20}
-            >
-              <MaterialCommunityIcons name="fire" size={16} color={theme.red} />
-              <Text style={{ fontSize: 13, fontWeight: '600', color: theme.textPrimary }}>{streak}</Text>
-            </Glass>
-          )}
+          <Glass
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingVertical: 8, paddingHorizontal: 12 }}
+            r={20}
+          >
+            <MaterialCommunityIcons name="fire" size={16} color={theme.red} />
+            <Text style={{ fontSize: 13, fontWeight: '600', color: theme.textPrimary }}>{streak}</Text>
+          </Glass>
         </View>
 
         {/* Activity ring */}
@@ -168,6 +188,21 @@ export default function Home() {
           </View>
         </Glass>
 
+        {/* First run: the plan the user just accepted gets re-introduced —
+            name plus the same week strip they saw on the handoff screen, with
+            today marked. Clears once a session has been logged (docs/05 §4). */}
+        {firstRun && today && programDays.length > 0 && (
+          <Glass style={{ padding: 14, marginTop: 12 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+              <Cap>Your plan · week 1</Cap>
+              <Text style={{ fontSize: 12, color: theme.textMuted }}>{today.program.name}</Text>
+            </View>
+            <View style={{ marginTop: 11 }}>
+              <WeekStrip labels={weekLabels} today={now.getDay()} />
+            </View>
+          </Glass>
+        )}
+
         {/* Program adjustments — deload / adherence (docs/02 step 5) */}
         {status?.deload.due && (
           <Banner icon="bed" tone={theme.red} text={status.deload.reason!} theme={theme} />
@@ -193,11 +228,16 @@ export default function Home() {
               <Text style={{ fontSize: 15, fontWeight: '600', color: theme.textPrimary }}>Rest day</Text>
             </View>
             <Text style={{ fontSize: 12, color: theme.textMuted, marginTop: 6 }}>
-              Nothing scheduled. Recovery is part of the program — but you can still train off-plan.
+              {firstRun && nextDay
+                ? `Your first session is ${DAY_NAMES[nextDay.weekday!]} · ${nextDay.label}.`
+                : 'Nothing scheduled. Recovery is part of the program — but you can still train off-plan.'}
             </Text>
-            <Pressable onPress={() => router.push('/logging')} style={{ marginTop: 12 }}>
+            <Pressable
+              onPress={() => router.push(firstRun && nextDay ? '/program' : '/logging')}
+              style={{ marginTop: 12 }}
+            >
               <Text style={{ fontSize: 13, fontWeight: '600', color: theme.greenText }}>
-                Start an ad-hoc workout ›
+                {firstRun && nextDay ? 'Preview it ›' : 'Start an ad-hoc workout ›'}
               </Text>
             </Pressable>
           </Glass>
@@ -231,14 +271,46 @@ export default function Home() {
             </Pressable>
             <View style={{ marginTop: 14 }}>
               <PrimaryButton
-                label={hasActiveSession ? 'Continue workout' : 'Start workout'}
+                label={hasActiveSession ? 'Continue workout' : `Start ${dayLabel}`}
                 onPress={() => router.push('/logging')}
               />
             </View>
           </>
         )}
+
+        {/* Energy — the calorie and macro targets onboarding computed. Until
+            the check-in (F8) exists, this card is where those numbers live. */}
+        {profile?.calorieTargetKcal != null && (
+          <Glass style={{ padding: 14, marginTop: 12 }}>
+            <Cap>Energy · today</Cap>
+            <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 7, marginTop: 5 }}>
+              <Text style={{ fontSize: 24, fontWeight: '700', letterSpacing: -0.4, color: theme.textPrimary }}>
+                {profile.calorieTargetKcal.toLocaleString()}
+              </Text>
+              <Text style={{ fontSize: 12, color: theme.textMuted, flex: 1 }}>
+                kcal target · nothing logged yet
+              </Text>
+            </View>
+            <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
+              <Macro value={`${profile.proteinG ?? 0}g`} label="protein" theme={theme} />
+              <Macro value={`${profile.fatG ?? 0}g`} label="fat" theme={theme} />
+              <Macro value={`${profile.carbG ?? 0}g`} label="carbs" theme={theme} />
+            </View>
+          </Glass>
+        )}
       </ScrollView>
     </Screen>
+  );
+}
+
+function Macro({ value, label, theme }: { value: string; label: string; theme: any }) {
+  return (
+    <View style={{ flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 12, backgroundColor: theme.fillSoft }}>
+      <Text style={{ fontSize: 15, fontWeight: '600', color: theme.textPrimary }}>{value}</Text>
+      <Text style={{ fontSize: 10.5, letterSpacing: 0.7, textTransform: 'uppercase', color: theme.textMuted }}>
+        {label}
+      </Text>
+    </View>
   );
 }
 
