@@ -23,3 +23,14 @@ test('weight splits into dial columns without a phantom .10', () => {
   // 180 lb dialled in imperial is stored as kilograms
   assert.equal(round1(180 * KG_PER_LB), 81.6);
 });
+
+test('a pound dialled comes back on the same two notches', () => {
+  // The weight wheels re-derive their columns from the stored kilograms, so a
+  // lossy store would make the tenths column jump a notch after every scroll.
+  for (let whole = 66; whole <= 550; whole++) {
+    for (let t = 0; t < 10; t++) {
+      const lb = whole + t / 10;
+      assert.deepEqual(splitTenths(round1((lb * KG_PER_LB) / KG_PER_LB)), { whole, tenth: t });
+    }
+  }
+});

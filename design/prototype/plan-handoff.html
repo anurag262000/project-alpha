@@ -1,0 +1,1000 @@
+<title>Plan Handoff Flow</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+  /* ---------- tokens: light is canonical (design/design-system.md) ------- */
+  :root{
+    /* document chrome */
+    --page:linear-gradient(165deg,#E4E5E9 0%,#D6D7DC 55%,#E9E9EC 100%);
+    --paper:rgba(255,255,255,0.62);
+    --paper-solid:#FFFFFF;
+    --rule:rgba(20,20,25,0.10);
+    --doc-tp:#1A1B1E; --doc-ts:#5F636A; --doc-tm:#8C9098;
+    /* app tokens — verbatim from the prototype */
+    --mist:#E6E7EA;
+    --glass-bg:rgba(255,255,255,0.55);
+    --glass-border:rgba(255,255,255,0.60);
+    --glass-shadow:rgba(30,32,40,0.09);
+    --glass-inset:inset 0 1px 1px rgba(255,255,255,0.85);
+    --field-bg:rgba(255,255,255,0.50);
+    --ink:#16171A; --on-ink:#F7F7F8; --ink-shadow:rgba(20,20,25,0.24);
+    --red:#FB2C36; --red-t:#D81E28; --green:#10B981; --green-t:#0A8F63;
+    --tp:#1A1B1E; --ts:#6C6F76; --tm:#8C9098; --td:#B4B7BD;
+    --hair:rgba(20,20,25,0.06); --track:rgba(20,20,25,0.08); --fill-soft:rgba(20,20,25,0.06);
+    --notch:#16171A; --blob-op:0.12;
+    --shell:#FFFFFF; --shell-border:rgba(0,0,0,0.06);
+    --scrim:rgba(20,20,25,0.32);
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --page:linear-gradient(165deg,#141519 0%,#0C0D10 60%,#141519 100%);
+      --paper:rgba(255,255,255,0.05);
+      --paper-solid:#16181C;
+      --rule:rgba(255,255,255,0.10);
+      --doc-tp:#F1F2F4; --doc-ts:#A3A8B0; --doc-tm:#787E86;
+      --mist:#0A0B0D;
+      --glass-bg:rgba(255,255,255,0.06);
+      --glass-border:rgba(255,255,255,0.10);
+      --glass-shadow:rgba(0,0,0,0.45);
+      --glass-inset:inset 0 1px 0 rgba(255,255,255,0.12);
+      --field-bg:rgba(255,255,255,0.05);
+      --ink:#F4F5F7; --on-ink:#0C0D0F; --ink-shadow:rgba(0,0,0,0.55);
+      --red:#FF3B47; --red-t:#FF6169; --green:#2DD576; --green-t:#4EE08C;
+      --tp:#F4F5F7; --ts:#A6ABB2; --tm:#7C828A; --td:#4E545C;
+      --hair:rgba(255,255,255,0.07); --track:rgba(255,255,255,0.08); --fill-soft:rgba(255,255,255,0.06);
+      --notch:rgba(255,255,255,0.14); --blob-op:0.18;
+      --shell:#1A1C1F; --shell-border:rgba(255,255,255,0.08);
+      --scrim:rgba(0,0,0,0.55);
+    }
+  }
+  :root[data-theme="dark"]{
+    --page:linear-gradient(165deg,#141519 0%,#0C0D10 60%,#141519 100%);
+    --paper:rgba(255,255,255,0.05);
+    --paper-solid:#16181C;
+    --rule:rgba(255,255,255,0.10);
+    --doc-tp:#F1F2F4; --doc-ts:#A3A8B0; --doc-tm:#787E86;
+    --mist:#0A0B0D;
+    --glass-bg:rgba(255,255,255,0.06);
+    --glass-border:rgba(255,255,255,0.10);
+    --glass-shadow:rgba(0,0,0,0.45);
+    --glass-inset:inset 0 1px 0 rgba(255,255,255,0.12);
+    --field-bg:rgba(255,255,255,0.05);
+    --ink:#F4F5F7; --on-ink:#0C0D0F; --ink-shadow:rgba(0,0,0,0.55);
+    --red:#FF3B47; --red-t:#FF6169; --green:#2DD576; --green-t:#4EE08C;
+    --tp:#F4F5F7; --ts:#A6ABB2; --tm:#7C828A; --td:#4E545C;
+    --hair:rgba(255,255,255,0.07); --track:rgba(255,255,255,0.08); --fill-soft:rgba(255,255,255,0.06);
+    --notch:rgba(255,255,255,0.14); --blob-op:0.18;
+    --shell:#1A1C1F; --shell-border:rgba(255,255,255,0.08);
+    --scrim:rgba(0,0,0,0.55);
+  }
+
+  *{box-sizing:border-box;-webkit-font-smoothing:antialiased;}
+  body{
+    margin:0;background:var(--page);color:var(--doc-tp);
+    font-family:'Inter',-apple-system,system-ui,sans-serif;font-size:15px;line-height:1.55;
+    min-height:100vh;padding:0 20px 72px;
+  }
+  .wrap{max-width:1180px;margin:0 auto;}
+  .mono{font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;}
+  .eyebrow{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--doc-tm);}
+  h1,h2,h3{font-family:'Archivo','Inter',sans-serif;text-wrap:balance;margin:0;}
+  h1{font-size:clamp(30px,4.6vw,46px);font-weight:700;letter-spacing:-.03em;line-height:1.02;}
+  h2{font-size:22px;font-weight:700;letter-spacing:-.02em;}
+  h3{font-size:15px;font-weight:600;letter-spacing:-.01em;}
+  p{margin:0;}
+  a{color:inherit;}
+  :focus-visible{outline:2px solid var(--green);outline-offset:3px;border-radius:8px;}
+
+  /* ---------- masthead ---------- */
+  .masthead{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;padding:44px 0 30px;border-bottom:1px solid var(--rule);}
+  .masthead .lede{max-width:60ch;color:var(--doc-ts);margin-top:14px;font-size:16px;}
+  .themebtn{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--doc-tp);
+    background:var(--paper);border:1px solid var(--rule);padding:9px 14px;border-radius:999px;cursor:pointer;white-space:nowrap;}
+  .themebtn:hover{border-color:var(--doc-tm);}
+
+  /* ---------- stage map ---------- */
+  .stagemap{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:30px 0 10px;}
+  .stagenode{text-align:left;font-family:inherit;background:var(--paper);border:1px solid var(--rule);border-radius:14px;
+    padding:13px 14px;cursor:pointer;color:var(--doc-ts);transition:border-color .15s,color .15s,background .15s;}
+  .stagenode strong{display:block;font-family:'Archivo',sans-serif;font-size:14px;font-weight:600;color:var(--doc-tp);letter-spacing:-.01em;margin-top:5px;}
+  .stagenode span{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.12em;color:var(--doc-tm);}
+  .stagenode small{display:block;font-size:12px;line-height:1.4;margin-top:5px;}
+  .stagenode[aria-current="true"]{background:var(--doc-tp);border-color:var(--doc-tp);}
+  .stagenode[aria-current="true"] strong,
+  .stagenode[aria-current="true"] span,
+  .stagenode[aria-current="true"] small{color:var(--paper-solid);}
+  :root[data-theme="dark"] .stagenode[aria-current="true"] small,
+  :root[data-theme="dark"] .stagenode[aria-current="true"] span{color:var(--doc-ts);}
+
+  /* ---------- lab: phone + notes ---------- */
+  .lab{display:grid;grid-template-columns:430px 1fr;gap:44px;align-items:start;margin-top:26px;}
+  .stage{position:sticky;top:20px;}
+  .hint{text-align:center;font-size:12px;color:var(--doc-tm);margin-top:14px;}
+
+  /* device */
+  .phone{width:390px;height:844px;background:var(--shell);border-radius:52px;padding:11px;
+    box-shadow:0 40px 90px rgba(10,10,12,0.30),inset 0 0 0 1px var(--shell-border);position:relative;}
+  .device{position:relative;width:100%;height:100%;background:var(--mist);border-radius:42px;overflow:hidden;
+    font-family:'Inter',sans-serif;color:var(--tp);}
+  .notch{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:120px;height:30px;border-radius:18px;background:var(--notch);z-index:40;}
+  .screen{position:absolute;inset:0;display:none;}
+  .screen.on{display:block;}
+  .blob{position:absolute;border-radius:50%;filter:blur(55px);pointer-events:none;opacity:var(--blob-op);}
+  .pad{position:absolute;inset:0;padding:52px 16px 96px;z-index:2;overflow-y:auto;scrollbar-width:none;}
+  .pad::-webkit-scrollbar{display:none;}
+
+  /* app primitives (ported from design/prototype) */
+  .cap{font-size:11px;color:var(--tm);letter-spacing:.08em;text-transform:uppercase;}
+  .g{background:var(--glass-bg);backdrop-filter:blur(28px) saturate(1.5);-webkit-backdrop-filter:blur(28px) saturate(1.5);
+    border:1px solid var(--glass-border);border-radius:18px;box-shadow:0 8px 24px var(--glass-shadow),var(--glass-inset);}
+  .title{font-family:'Inter',sans-serif;font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.15;}
+  .sub{font-size:13px;color:var(--ts);margin-top:8px;line-height:1.5;}
+  .row{display:flex;align-items:center;}
+  .between{justify-content:space-between;}
+  .btn-ink{border:none;font-family:inherit;font-size:15px;font-weight:600;color:var(--on-ink);background:var(--ink);
+    padding:15px;border-radius:15px;width:100%;display:flex;align-items:center;justify-content:center;gap:8px;
+    box-shadow:0 8px 20px var(--ink-shadow);cursor:pointer;transition:transform .1s;}
+  .btn-ink:active{transform:scale(.985);}
+  .btn-ghost{border:none;font-family:inherit;font-size:13.5px;font-weight:500;color:var(--ts);background:transparent;padding:11px;width:100%;cursor:pointer;}
+  .badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:6px 12px;border-radius:20px;}
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:var(--ts);
+    background:var(--field-bg);border:1px solid var(--glass-border);padding:6px 11px;border-radius:20px;white-space:nowrap;}
+  .ico{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;}
+  .footbar{position:absolute;left:0;right:0;bottom:0;z-index:12;padding:12px 16px 16px;
+    background:linear-gradient(to top,var(--mist) 55%,transparent);}
+
+  /* week strip */
+  .week{display:flex;gap:6px;}
+  .wd{flex:1;text-align:center;padding:9px 0 8px;border-radius:13px;background:var(--field-bg);border:1px solid var(--glass-border);}
+  .wd b{display:block;font-size:12px;font-weight:600;}
+  .wd i{display:block;font-style:normal;font-size:9.5px;color:var(--tm);margin-top:2px;letter-spacing:.02em;}
+  .wd.train{background:var(--ink);border-color:var(--ink);color:var(--on-ink);}
+  .wd.train i{color:color-mix(in srgb,var(--on-ink) 62%,transparent);}
+
+  /* day card */
+  .daycard{display:block;width:100%;text-align:left;font-family:inherit;color:inherit;cursor:pointer;padding:14px;margin:0;
+    background:var(--glass-bg);backdrop-filter:blur(28px) saturate(1.5);-webkit-backdrop-filter:blur(28px) saturate(1.5);
+    border:1px solid var(--glass-border);border-radius:18px;box-shadow:0 8px 24px var(--glass-shadow),var(--glass-inset);transition:transform .12s;}
+  .daycard:active{transform:scale(.99);}
+  .daycard .dc-day{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--tm);}
+  .daycard .dc-name{font-size:16px;font-weight:600;letter-spacing:-.01em;margin-top:2px;}
+  .daycard .dc-meta{font-size:12px;color:var(--tm);margin-top:1px;}
+  .bar{display:flex;height:5px;border-radius:20px;overflow:hidden;background:var(--track);margin-top:11px;gap:2px;}
+  .bar span{display:block;height:100%;border-radius:20px;background:var(--fill-soft);}
+  .bar span.lead{background:var(--ink);}
+  .legend{display:flex;flex-wrap:wrap;gap:9px;margin-top:7px;font-size:11px;color:var(--tm);}
+  .legend b{font-weight:500;color:var(--ts);}
+
+  /* disclosure */
+  .disc summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .disc summary::-webkit-details-marker{display:none;}
+  .disc[open] .chev{transform:rotate(90deg);}
+  .chev{transition:transform .18s;color:var(--td);}
+  .disc ul{margin:11px 0 0;padding-left:16px;font-size:12.5px;color:var(--ts);line-height:1.6;}
+  .disc li{margin-bottom:5px;}
+
+  /* sheets */
+  .scrim{position:absolute;inset:0;background:var(--scrim);opacity:0;pointer-events:none;transition:opacity .28s;z-index:20;}
+  .scrim.on{opacity:1;pointer-events:auto;}
+  .sheet{position:absolute;left:0;right:0;bottom:0;z-index:25;background:var(--mist);border-radius:26px 26px 0 0;
+    box-shadow:0 -14px 40px rgba(10,10,12,.28);transform:translateY(101%);transition:transform .34s cubic-bezier(.32,.72,0,1);
+    display:flex;flex-direction:column;overflow:hidden;}
+  .sheet.on{transform:translateY(0);}
+  #sheetDay{height:87%;}
+  #sheetEx{height:92%;z-index:30;}
+  .grab{padding:9px 0 3px;display:flex;justify-content:center;flex-shrink:0;}
+  .grab i{display:block;width:38px;height:5px;border-radius:20px;background:var(--track);}
+  .sheet-head{padding:6px 18px 12px;flex-shrink:0;border-bottom:1px solid var(--hair);}
+  .sheet-body{flex:1;overflow-y:auto;padding:16px 18px 20px;scrollbar-width:none;}
+  .sheet-body::-webkit-scrollbar{display:none;}
+  .sheet-foot{flex-shrink:0;padding:10px 18px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--hair);display:flex;gap:10px;align-items:center;}
+
+  /* exercise rows */
+  .exrow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;font-family:inherit;color:inherit;
+    background:none;border:none;border-bottom:1px solid var(--hair);padding:13px 0;cursor:pointer;}
+  .exrow:last-of-type{border-bottom:none;}
+  .exrow .n{font-size:12px;color:var(--tm);width:15px;font-variant-numeric:tabular-nums;}
+  .exrow .nm{font-size:14.5px;font-weight:500;}
+  .exrow .pr{font-size:12px;color:var(--tm);margin-top:1px;font-variant-numeric:tabular-nums;}
+  .tag{font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--tm);border:1px solid var(--hair);padding:3px 6px;border-radius:6px;}
+
+  /* exercise detail */
+  .demo{position:relative;height:168px;border-radius:16px;overflow:hidden;background:var(--fill-soft);
+    display:flex;align-items:center;justify-content:center;border:1px solid var(--glass-border);}
+  .demo .grid{position:absolute;inset:0;opacity:.5;
+    background-image:linear-gradient(var(--hair) 1px,transparent 1px),linear-gradient(90deg,var(--hair) 1px,transparent 1px);
+    background-size:26px 26px;}
+  .play{position:relative;width:46px;height:46px;border-radius:50%;background:var(--ink);color:var(--on-ink);
+    display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px var(--ink-shadow);}
+  .demo .lbl{position:absolute;left:12px;bottom:10px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--tm);}
+  .steps{counter-reset:s;display:flex;flex-direction:column;gap:11px;margin-top:12px;}
+  .steps li{list-style:none;display:flex;gap:11px;font-size:13px;line-height:1.5;color:var(--ts);}
+  .steps li::before{counter-increment:s;content:counter(s);flex-shrink:0;width:21px;height:21px;border-radius:50%;
+    background:var(--ink);color:var(--on-ink);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;margin-top:1px;}
+  .warn{display:flex;gap:9px;font-size:12.5px;line-height:1.45;color:var(--ts);padding:9px 0;border-bottom:1px solid var(--hair);}
+  .warn:last-child{border-bottom:none;}
+  .stat{flex:1;text-align:center;background:var(--fill-soft);border-radius:12px;padding:10px 4px;}
+  .stat b{display:block;font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;}
+  .stat span{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--tm);}
+
+  /* toast */
+  .toast{position:absolute;left:16px;right:16px;bottom:96px;z-index:35;display:flex;align-items:center;gap:11px;
+    padding:13px 15px;border-radius:16px;background:var(--ink);color:var(--on-ink);box-shadow:0 12px 30px var(--ink-shadow);
+    opacity:0;transform:translateY(10px);transition:opacity .25s,transform .25s;pointer-events:none;}
+  .toast.on{opacity:1;transform:translateY(0);}
+
+  /* bottom nav */
+  .nav{position:absolute;bottom:12px;left:16px;right:16px;height:56px;border-radius:20px;display:flex;
+    justify-content:space-around;align-items:center;color:var(--tm);z-index:15;}
+  .nav button{background:none;border:none;color:inherit;padding:9px;border-radius:12px;cursor:pointer;display:flex;font-size:21px;}
+  .nav button.on{color:var(--ink);background:var(--fill-soft);}
+
+  /* ---------- notes column ---------- */
+  .notes{padding-top:4px;}
+  .note{display:none;}
+  .note.on{display:block;animation:fade .3s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+  .note h2{margin-bottom:6px;}
+  .note .route{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--doc-tm);margin-bottom:16px;}
+  .note p.body{color:var(--doc-ts);max-width:62ch;}
+  .block{margin-top:22px;}
+  .block h3{margin-bottom:8px;}
+  .block ul{margin:0;padding-left:18px;color:var(--doc-ts);font-size:14px;line-height:1.65;}
+  .block li{margin-bottom:7px;}
+  .block li b{color:var(--doc-tp);font-weight:600;}
+  .data{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px;}
+  .data th,.data td{text-align:left;padding:8px 12px 8px 0;border-bottom:1px solid var(--rule);vertical-align:top;}
+  .data th{font-family:'IBM Plex Mono',monospace;font-weight:400;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--doc-tm);}
+  .data td:first-child{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--doc-tp);white-space:nowrap;}
+  .data td:last-child{color:var(--doc-ts);}
+  .tablewrap{overflow-x:auto;}
+  .callout{border-left:2px solid var(--green);padding:2px 0 2px 14px;margin-top:18px;color:var(--doc-ts);font-size:14px;}
+  .callout b{color:var(--doc-tp);}
+
+  /* ---------- research + closing ---------- */
+  .section{margin-top:64px;padding-top:34px;border-top:1px solid var(--rule);}
+  .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:22px;margin-top:24px;}
+  .card{background:var(--paper);border:1px solid var(--rule);border-radius:16px;padding:18px;}
+  .card h3{margin-bottom:7px;}
+  .card p{font-size:13.5px;color:var(--doc-ts);line-height:1.55;}
+  .card .src{display:block;margin-top:11px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--doc-tm);text-decoration:none;}
+  .card .src:hover{color:var(--doc-tp);}
+  .twoup{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:34px;margin-top:22px;}
+  footer{margin-top:56px;padding-top:22px;border-top:1px solid var(--rule);font-size:12.5px;color:var(--doc-tm);display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+
+  @media (max-height:940px) and (min-width:1021px){
+    .phone{transform:scale(.86);transform-origin:top center;margin-bottom:-120px;}
+    .stage{top:12px;}
+  }
+  @media (max-width:1020px){
+    .lab{grid-template-columns:1fr;gap:34px;}
+    .stage{position:static;display:flex;justify-content:center;}
+    .stagemap{grid-template-columns:repeat(2,1fr);}
+  }
+  @media (max-width:460px){
+    .phone{transform:scale(.84);transform-origin:top center;margin-bottom:-130px;}
+    .stagemap{grid-template-columns:1fr;}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition-duration:.01ms !important;animation-duration:.01ms !important;}
+  }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5l11 6.5-11 6.5z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 3s5 4.5 5 9a5 5 0 01-10 0c0-1.6.8-3 1.6-4 .2 1.2 1 2 2 2 .6 0 1-.5 1-1.2C11.6 6.9 12 4.7 12 3z"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 4.5l8.5 15h-17z"/><path d="M12 10v4"/><path d="M12 17.2v.1"/></symbol>
+  <symbol id="i-swap" viewBox="0 0 24 24"><path d="M4 8h13l-3-3M20 16H7l3 3"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 10.5L12 4l8 6.5V20h-5v-5.5H9V20H4z"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 19V5M4 15l5-4 4 3 7-7"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c1.4-3.6 4.2-5.4 7.5-5.4S18.1 16.4 19.5 20"/></symbol>
+</svg>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div>
+      <p class="eyebrow">Project Alpha · post-onboarding</p>
+      <h1>Plan handoff</h1>
+      <p class="lede">Four stages between “your plan is ready” and a working home screen: the split, a day, an
+        exercise, and the moment you accept it. Built on the app’s own light-liquid-glass system, so the screens
+        below are the spec, not a mood board.</p>
+    </div>
+    <button class="themebtn" id="themeBtn" type="button">Dark</button>
+  </header>
+
+  <nav class="stagemap" aria-label="Stages">
+    <button class="stagenode" type="button" data-stage="1" aria-current="true"><span>Stage 01</span><strong>The split</strong><small>What am I on for the next six weeks?</small></button>
+    <button class="stagenode" type="button" data-stage="2"><span>Stage 02</span><strong>A day</strong><small>What is “Upper A”, actually?</small></button>
+    <button class="stagenode" type="button" data-stage="3"><span>Stage 03</span><strong>An exercise</strong><small>What is it, how do I do it, why is it here?</small></button>
+    <button class="stagenode" type="button" data-stage="4"><span>Stage 04</span><strong>Accept</strong><small>Back out, commit, one tap.</small></button>
+    <button class="stagenode" type="button" data-stage="5"><span>Stage 05</span><strong>Today</strong><small>The real landing screen, first run.</small></button>
+  </nav>
+
+  <div class="lab">
+    <!-- ============================ DEVICE ============================ -->
+    <div class="stage">
+      <div>
+        <div class="phone">
+          <div class="notch"></div>
+          <div class="device">
+
+            <!-- ---------------- SCREEN: PLAN ---------------- -->
+            <section class="screen on" id="scPlan" aria-label="Your plan">
+              <div class="blob" style="width:240px;height:240px;background:var(--green);top:-40px;right:-50px;"></div>
+              <div class="blob" style="width:210px;height:210px;background:var(--red);bottom:120px;left:-60px;"></div>
+              <div class="pad">
+                <span class="badge" style="background:color-mix(in srgb,var(--green) 15%,transparent);color:var(--green-t);">
+                  <svg class="ico" style="font-size:14px;"><use href="#i-check"/></svg>Built from your answers
+                </span>
+                <h2 class="title" style="margin-top:14px;">Upper / Lower<br>×2 a week</h2>
+                <p class="sub">4 days, 1–3 years of training, fat-loss phase → two upper and two lower days,
+                  strength first, hypertrophy second.</p>
+
+                <div class="row" style="gap:7px;margin-top:14px;flex-wrap:wrap;">
+                  <span class="chip">4 days · week</span>
+                  <span class="chip">45–55 min</span>
+                  <span class="chip" style="color:var(--red-t);">Fat loss</span>
+                </div>
+
+                <div class="cap" style="margin:22px 0 9px;">Your week</div>
+                <div class="week">
+                  <div class="wd train"><b>M</b><i>Up A</i></div>
+                  <div class="wd"><b>T</b><i>rest</i></div>
+                  <div class="wd train"><b>W</b><i>Lo A</i></div>
+                  <div class="wd"><b>T</b><i>rest</i></div>
+                  <div class="wd train"><b>F</b><i>Up B</i></div>
+                  <div class="wd train"><b>S</b><i>Lo B</i></div>
+                  <div class="wd"><b>S</b><i>rest</i></div>
+                </div>
+
+                <div class="cap" style="margin:22px 0 9px;">Tap a day to see what’s in it</div>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                  <button class="daycard" type="button" data-day="upperA">
+                    <div class="row between">
+                      <div>
+                        <div class="dc-day">Mon</div>
+                        <div class="dc-name">Upper A · strength</div>
+                        <div class="dc-meta">6 exercises · 20 sets · ~52 min</div>
+                      </div>
+                      <svg class="ico chev" style="font-size:20px;"><use href="#i-chev"/></svg>
+                    </div>
+                    <div class="bar"><span class="lead" style="flex:7"></span><span style="flex:6"></span><span style="flex:4"></span><span style="flex:3"></span></div>
+                    <div class="legend"><span><b>Back</b> 7</span><span><b>Delts</b> 6</span><span><b>Chest</b> 4</span><span><b>Triceps</b> 3</span></div>
+                  </button>
+
+                  <button class="daycard" type="button" data-day="lowerA">
+                    <div class="row between">
+                      <div>
+                        <div class="dc-day">Wed</div>
+                        <div class="dc-name">Lower A · strength</div>
+                        <div class="dc-meta">5 exercises · 17 sets · ~48 min</div>
+                      </div>
+                      <svg class="ico chev" style="font-size:20px;"><use href="#i-chev"/></svg>
+                    </div>
+                    <div class="bar"><span class="lead" style="flex:7"></span><span style="flex:5"></span><span style="flex:3"></span><span style="flex:2"></span></div>
+                    <div class="legend"><span><b>Quads</b> 7</span><span><b>Hams</b> 5</span><span><b>Glutes</b> 3</span><span><b>Calves</b> 2</span></div>
+                  </button>
+
+                  <button class="daycard" type="button" data-day="upperB">
+                    <div class="row between">
+                      <div>
+                        <div class="dc-day">Fri</div>
+                        <div class="dc-name">Upper B · hypertrophy</div>
+                        <div class="dc-meta">6 exercises · 20 sets · ~50 min</div>
+                      </div>
+                      <svg class="ico chev" style="font-size:20px;"><use href="#i-chev"/></svg>
+                    </div>
+                    <div class="bar"><span class="lead" style="flex:6"></span><span style="flex:6"></span><span style="flex:4"></span><span style="flex:4"></span></div>
+                    <div class="legend"><span><b>Chest</b> 6</span><span><b>Back</b> 6</span><span><b>Biceps</b> 4</span><span><b>Delts</b> 4</span></div>
+                  </button>
+
+                  <button class="daycard" type="button" data-day="lowerB">
+                    <div class="row between">
+                      <div>
+                        <div class="dc-day">Sat</div>
+                        <div class="dc-name">Lower B · hypertrophy</div>
+                        <div class="dc-meta">5 exercises · 17 sets · ~46 min</div>
+                      </div>
+                      <svg class="ico chev" style="font-size:20px;"><use href="#i-chev"/></svg>
+                    </div>
+                    <div class="bar"><span class="lead" style="flex:7"></span><span style="flex:5"></span><span style="flex:3"></span><span style="flex:2"></span></div>
+                    <div class="legend"><span><b>Hams</b> 7</span><span><b>Quads</b> 5</span><span><b>Glutes</b> 3</span><span><b>Core</b> 2</span></div>
+                  </button>
+                </div>
+
+                <details class="disc g" style="padding:14px;margin-top:14px;">
+                  <summary>
+                    <div>
+                      <div class="cap">Why this plan</div>
+                      <div style="font-size:13px;color:var(--ts);margin-top:4px;">Three rules picked it. Tap to read them.</div>
+                    </div>
+                    <svg class="ico chev" style="font-size:19px;"><use href="#i-chev"/></svg>
+                  </summary>
+                  <ul>
+                    <li>4 days with 1–3 years’ experience → upper/lower with a different emphasis per day.</li>
+                    <li>Fat-loss phase → volume sits near <b>MEV</b>, not MAV: recovery is lower in a deficit.</li>
+                    <li>Reps 10–15 with shorter rest — session density stays high without separate cardio.</li>
+                    <li>Gym equipment, no injury flags → barbell compounds lead every day.</li>
+                  </ul>
+                </details>
+
+                <div class="g row between" style="padding:13px 15px;margin-top:12px;">
+                  <div>
+                    <div class="cap">Daily targets</div>
+                    <div style="font-size:14px;font-weight:600;margin-top:3px;font-variant-numeric:tabular-nums;">2,224 kcal · 163 g protein</div>
+                  </div>
+                  <span style="font-size:12px;color:var(--green-t);font-weight:500;white-space:nowrap;">See all ›</span>
+                </div>
+                <div style="height:8px;"></div>
+              </div>
+
+              <div class="footbar">
+                <button class="btn-ink" type="button" id="acceptBtn">Use this plan<svg class="ico" style="font-size:17px;"><use href="#i-arrow"/></svg></button>
+                <button class="btn-ghost" type="button">Change my days or equipment</button>
+              </div>
+
+              <div class="toast" id="toast">
+                <svg class="ico" style="font-size:20px;color:var(--green);"><use href="#i-check"/></svg>
+                <div>
+                  <div style="font-size:13.5px;font-weight:600;">Plan saved</div>
+                  <div style="font-size:12px;opacity:.72;">First session: Monday · Upper A</div>
+                </div>
+              </div>
+            </section>
+
+            <!-- ---------------- SCREEN: TODAY ---------------- -->
+            <section class="screen" id="scToday" aria-label="Today">
+              <div class="blob" style="width:190px;height:190px;background:var(--red);top:-30px;right:-30px;"></div>
+              <div class="blob" style="width:210px;height:210px;background:var(--green);bottom:130px;left:-60px;"></div>
+              <div class="pad" style="padding-bottom:88px;">
+                <div class="row between" style="align-items:flex-start;">
+                  <div>
+                    <div class="cap">Monday · day 1</div>
+                    <div style="font-size:22px;font-weight:700;letter-spacing:-.02em;margin-top:3px;line-height:1.2;">Good evening,<br>Anurag</div>
+                  </div>
+                  <div class="g row" style="gap:5px;font-size:13px;font-weight:600;padding:8px 12px;border-radius:20px;">
+                    <svg class="ico" style="font-size:16px;color:var(--red);"><use href="#i-flame"/></svg>0
+                  </div>
+                </div>
+
+                <div class="g row" style="margin-top:18px;padding:16px;gap:16px;">
+                  <svg width="86" height="86" viewBox="0 0 120 120" aria-hidden="true">
+                    <circle cx="60" cy="60" r="52" fill="none" style="stroke:var(--track)" stroke-width="9"/>
+                    <circle cx="60" cy="60" r="52" fill="none" style="stroke:var(--green)" stroke-width="9" stroke-linecap="round" stroke-dasharray="228 327" transform="rotate(-90 60 60)"/>
+                    <circle cx="60" cy="60" r="39" fill="none" style="stroke:var(--track)" stroke-width="9"/>
+                    <circle cx="60" cy="60" r="39" fill="none" style="stroke:var(--red)" stroke-width="9" stroke-linecap="round" stroke-dasharray="135 245" transform="rotate(-90 60 60)"/>
+                  </svg>
+                  <div>
+                    <div style="font-size:24px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;">7,420<span style="font-size:13px;color:var(--tm);font-weight:400;"> steps</span></div>
+                    <div style="font-size:12px;color:var(--green-t);margin-top:2px;">74% of 10k goal</div>
+                    <div style="font-size:12px;color:var(--red-t);margin-top:6px;">38 active min</div>
+                  </div>
+                </div>
+
+                <div class="g" style="padding:14px;margin-top:12px;">
+                  <div class="row between">
+                    <span class="cap">Your plan · week 1</span>
+                    <span style="font-size:12px;color:var(--tm);">Upper / Lower ×2</span>
+                  </div>
+                  <div class="week" style="margin-top:11px;">
+                    <div class="wd train"><b>M</b><i>today</i></div>
+                    <div class="wd"><b>T</b><i>rest</i></div>
+                    <div class="wd train"><b>W</b><i>Lo A</i></div>
+                    <div class="wd"><b>T</b><i>rest</i></div>
+                    <div class="wd train"><b>F</b><i>Up B</i></div>
+                    <div class="wd train"><b>S</b><i>Lo B</i></div>
+                    <div class="wd"><b>S</b><i>rest</i></div>
+                  </div>
+                </div>
+
+                <div class="row between" style="margin:20px 0 9px;">
+                  <span class="cap">Today · Upper A</span>
+                  <span style="font-size:12px;color:var(--tm);">6 exercises · ~52 min</span>
+                </div>
+                <div class="g" style="padding:2px 14px;">
+                  <div class="exrow" style="cursor:default;"><span class="n">1</span><div style="flex:1;"><div class="nm">Barbell Bench Press</div><div class="pr">4 × 10–15</div></div><svg class="ico" style="font-size:18px;color:var(--td);"><use href="#i-chev"/></svg></div>
+                  <div class="exrow" style="cursor:default;"><span class="n">2</span><div style="flex:1;"><div class="nm">Barbell Row</div><div class="pr">4 × 10–15</div></div><svg class="ico" style="font-size:18px;color:var(--td);"><use href="#i-chev"/></svg></div>
+                  <div class="exrow" style="cursor:default;"><span class="n">3</span><div style="flex:1;"><div class="nm">Overhead Press</div><div class="pr">3 × 10–15</div></div><svg class="ico" style="font-size:18px;color:var(--td);"><use href="#i-chev"/></svg></div>
+                  <div class="exrow" style="cursor:default;"><span class="n">4</span><div style="flex:1;"><div class="nm">+ 3 more</div><div class="pr">Lat pulldown, lateral raise, pushdown</div></div><svg class="ico" style="font-size:18px;color:var(--td);"><use href="#i-chev"/></svg></div>
+                </div>
+
+                <div class="g" style="padding:14px;margin-top:12px;">
+                  <div class="row between">
+                    <span class="cap">Energy · today</span>
+                    <span style="font-size:12px;color:var(--green-t);font-weight:500;">Check in ›</span>
+                  </div>
+                  <div class="row" style="align-items:baseline;gap:7px;margin-top:5px;">
+                    <span style="font-size:24px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;">2,224</span>
+                    <span style="font-size:12px;color:var(--tm);">kcal target · nothing logged yet</span>
+                  </div>
+                  <div class="row" style="gap:8px;margin-top:12px;">
+                    <div class="stat"><b>163g</b><span>protein</span></div>
+                    <div class="stat"><b>62g</b><span>fat</span></div>
+                    <div class="stat"><b>254g</b><span>carbs</span></div>
+                  </div>
+                </div>
+
+                <div style="margin-top:14px;">
+                  <button class="btn-ink" type="button"><svg class="ico" style="font-size:17px;"><use href="#i-play"/></svg>Start Upper A</button>
+                </div>
+                <div style="height:72px;"></div>
+              </div>
+
+              <div class="g nav">
+                <button class="on" type="button" aria-label="Today"><svg class="ico" style="font-size:22px;"><use href="#i-home"/></svg></button>
+                <button type="button" id="backToPlan" aria-label="Plan"><svg class="ico" style="font-size:22px;"><use href="#i-cal"/></svg></button>
+                <button type="button" aria-label="Progress"><svg class="ico" style="font-size:22px;"><use href="#i-chart"/></svg></button>
+                <button type="button" aria-label="Profile"><svg class="ico" style="font-size:22px;"><use href="#i-user"/></svg></button>
+              </div>
+            </section>
+
+            <!-- ---------------- SHEETS ---------------- -->
+            <div class="scrim" id="scrim"></div>
+
+            <!-- day sheet -->
+            <div class="sheet" id="sheetDay" role="dialog" aria-label="Upper A">
+              <div class="grab"><i></i></div>
+              <div class="sheet-head">
+                <div class="row between">
+                  <div>
+                    <div class="cap">Monday</div>
+                    <div style="font-size:20px;font-weight:700;letter-spacing:-.02em;margin-top:2px;">Upper A · strength</div>
+                  </div>
+                  <span class="chip"><svg class="ico" style="font-size:14px;"><use href="#i-clock"/></svg>~52 min</span>
+                </div>
+                <div class="row" style="gap:7px;margin-top:11px;flex-wrap:wrap;">
+                  <span class="chip">6 exercises</span>
+                  <span class="chip">20 sets</span>
+                  <span class="chip">Rest 90 s</span>
+                </div>
+              </div>
+              <div class="sheet-body">
+                <div class="cap">Sets by muscle · this session</div>
+                <div class="bar" style="margin-top:9px;height:7px;"><span class="lead" style="flex:7"></span><span style="flex:6"></span><span style="flex:4"></span><span style="flex:3"></span></div>
+                <div class="legend" style="margin-top:8px;"><span><b>Back</b> 7</span><span><b>Delts</b> 6</span><span><b>Chest</b> 4</span><span><b>Triceps</b> 3</span></div>
+                <p style="font-size:12px;color:var(--tm);margin-top:9px;line-height:1.5;">
+                  Half of your weekly back and chest volume. Friday’s Upper B covers the other half.
+                </p>
+
+                <div class="cap" style="margin:20px 0 2px;">In order</div>
+                <button class="exrow" type="button" data-ex="bench">
+                  <span class="n">1</span>
+                  <div style="flex:1;"><div class="nm">Barbell Bench Press</div><div class="pr">4 × 10–15 · RPE 8</div></div>
+                  <span class="tag">Compound</span>
+                  <svg class="ico" style="font-size:18px;color:var(--td);"><use href="#i-chev"/></svg>
+                </button>
+                <button class="exrow" type="button" data-ex="row">
+                  <span class="n">2</span>
+                  <div style="flex:1;"><div class="nm">Barbell Row</div><div class="pr">4 × 10–15 · RPE 8</div></div>
+                  <span class="tag">Compound</span>
+                  <svg class="ico" style="font-size:18px;color:var(--td);"><use href="#i-chev"/></svg>
+                </button>
+                <button class="exrow" type="button" data-ex="ohp">
+                  <span class="n">3</span>
+                  <div style="flex:1;"><div class="nm">Overhead Press</div><div class="pr">3 × 10–15 · RPE 8</div></div>
+                  <span class="tag">Compound</span>
+                  <svg class="ico" style="font-size:18px;color:var(--td);"><use href="#i-chev"/></svg>
+                </button>
+                <button class="exrow" type="button" data-ex="pulldown">
+                  <span class="n">4</span>
+                  <div style="flex:1;"><div class="nm">Lat Pulldown</div><div class="pr">3 × 10–15 · RPE 8</div></div>
+                  <span class="tag">Secondary</span>
+                  <svg class="ico" style="font-size:18px;color:var(--td);"><use href="#i-chev"/></svg>
+                </button>
+                <button class="exrow" type="button" data-ex="lateral">
+                  <span class="n">5</span>
+                  <div style="flex:1;"><div class="nm">Lateral Raise</div><div class="pr">3 × 12–15 · RPE 9</div></div>
+                  <span class="tag">Isolation</span>
+                  <svg class="ico" style="font-size:18px;color:var(--td);"><use href="#i-chev"/></svg>
+                </button>
+                <button class="exrow" type="button" data-ex="pushdown">
+                  <span class="n">6</span>
+                  <div style="flex:1;"><div class="nm">Cable Triceps Pushdown</div><div class="pr">3 × 12–15 · RPE 9</div></div>
+                  <span class="tag">Isolation</span>
+                  <svg class="ico" style="font-size:18px;color:var(--td);"><use href="#i-chev"/></svg>
+                </button>
+
+                <p style="font-size:12px;color:var(--tm);margin-top:16px;line-height:1.55;">
+                  Order is deliberate: barbell compounds while you’re fresh, isolation once fatigue is paid for.
+                </p>
+              </div>
+              <div class="sheet-foot">
+                <button class="btn-ghost sheet-close" type="button" style="width:auto;padding:11px 4px;display:flex;align-items:center;gap:6px;">
+                  <svg class="ico" style="font-size:16px;"><use href="#i-back"/></svg>Back to plan
+                </button>
+                <span style="flex:1;"></span>
+                <button class="btn-ghost" type="button" style="width:auto;padding:11px 4px;display:flex;align-items:center;gap:6px;">
+                  <svg class="ico" style="font-size:16px;"><use href="#i-swap"/></svg>Swap an exercise
+                </button>
+              </div>
+            </div>
+
+            <!-- exercise sheet -->
+            <div class="sheet" id="sheetEx" role="dialog" aria-label="Barbell Bench Press">
+              <div class="grab"><i></i></div>
+              <div class="sheet-head">
+                <div class="row between" style="align-items:flex-start;">
+                  <div>
+                    <div style="font-size:20px;font-weight:700;letter-spacing:-.02em;">Barbell Bench Press</div>
+                    <div style="font-size:12px;color:var(--tm);margin-top:3px;">Flat barbell press · barbell + bench · intermediate</div>
+                  </div>
+                  <button class="btn-ghost sheet-close" type="button" style="width:auto;padding:4px;">
+                    <svg class="ico" style="font-size:20px;"><use href="#i-back"/></svg>
+                  </button>
+                </div>
+              </div>
+              <div class="sheet-body">
+                <div class="demo">
+                  <div class="grid"></div>
+                  <div class="play"><svg class="ico" style="font-size:20px;"><use href="#i-play"/></svg></div>
+                  <span class="lbl">2-second loop · start → finish</span>
+                </div>
+
+                <p style="font-size:13.5px;line-height:1.55;color:var(--ts);margin-top:14px;">
+                  The horizontal press: you push a loaded bar away from your chest while lying flat. It is the
+                  main chest builder in your week, and the lift your upper-body progression is measured on.
+                </p>
+
+                <div class="g" style="padding:13px 14px;margin-top:14px;">
+                  <div class="cap">Your prescription · Monday</div>
+                  <div class="row" style="gap:8px;margin-top:10px;">
+                    <div class="stat"><b>4</b><span>sets</span></div>
+                    <div class="stat"><b>10–15</b><span>reps</span></div>
+                    <div class="stat"><b>8</b><span>RPE</span></div>
+                    <div class="stat"><b>90 s</b><span>rest</span></div>
+                  </div>
+                  <p style="font-size:12px;color:var(--tm);margin-top:10px;line-height:1.5;">
+                    Start around 45 kg and let the app move it: hit 15 on every set → weight goes up next Monday.
+                  </p>
+                </div>
+
+                <div class="cap" style="margin:20px 0 0;">How to do it</div>
+                <ol class="steps">
+                  <li>Grip just outside shoulder width. Pull your shoulder blades down and back, and keep them pinned to the bench.</li>
+                  <li>Unrack and lower to the base of your sternum, elbows about 45° from your ribs, wrists stacked over them.</li>
+                  <li>Touch lightly, then press up and slightly back, so the bar finishes over your shoulders.</li>
+                  <li>Feet planted, ribs down. Stop the set when you have 2 clean reps left — that’s RPE 8.</li>
+                </ol>
+
+                <div class="cap" style="margin:20px 0 4px;">Watch for</div>
+                <div class="warn"><svg class="ico" style="font-size:17px;color:var(--red);margin-top:1px;"><use href="#i-alert"/></svg>
+                  <span>Elbows flared to 90° — moves load off the chest and onto the shoulder joint.</span></div>
+                <div class="warn"><svg class="ico" style="font-size:17px;color:var(--red);margin-top:1px;"><use href="#i-alert"/></svg>
+                  <span>Bouncing the bar off your chest. That’s the hardest part of the rep; don’t skip it.</span></div>
+
+                <div class="cap" style="margin:20px 0 9px;">What it works</div>
+                <div class="g row" style="padding:13px 14px;gap:14px;">
+                  <svg width="76" height="96" viewBox="0 0 76 96" aria-hidden="true">
+                    <rect x="30" y="4" width="16" height="14" rx="7" fill="var(--fill-soft)"/>
+                    <rect x="14" y="20" width="20" height="9" rx="4.5" fill="var(--red)" opacity=".45"/>
+                    <rect x="42" y="20" width="20" height="9" rx="4.5" fill="var(--red)" opacity=".45"/>
+                    <rect x="21" y="31" width="16" height="20" rx="6" fill="var(--red)"/>
+                    <rect x="39" y="31" width="16" height="20" rx="6" fill="var(--red)"/>
+                    <rect x="10" y="32" width="9" height="26" rx="4.5" fill="var(--red)" opacity=".45"/>
+                    <rect x="57" y="32" width="9" height="26" rx="4.5" fill="var(--red)" opacity=".45"/>
+                    <rect x="24" y="54" width="28" height="26" rx="8" fill="var(--fill-soft)"/>
+                    <rect x="24" y="82" width="11" height="12" rx="5" fill="var(--fill-soft)"/>
+                    <rect x="41" y="82" width="11" height="12" rx="5" fill="var(--fill-soft)"/>
+                  </svg>
+                  <div style="flex:1;">
+                    <div class="row between" style="margin-bottom:7px;">
+                      <span style="font-size:13.5px;font-weight:600;">Chest</span>
+                      <span style="font-size:11px;color:var(--red-t);">primary</span>
+                    </div>
+                    <div class="row between" style="margin-bottom:7px;">
+                      <span style="font-size:13px;color:var(--ts);">Triceps</span>
+                      <span style="font-size:11px;color:var(--tm);">secondary</span>
+                    </div>
+                    <div class="row between">
+                      <span style="font-size:13px;color:var(--ts);">Front delts</span>
+                      <span style="font-size:11px;color:var(--tm);">secondary</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="g" style="padding:13px 14px;margin-top:12px;">
+                  <div class="cap">Why it’s in your plan</div>
+                  <p style="font-size:13px;color:var(--ts);margin-top:6px;line-height:1.55;">
+                    First movement of the day, while you’re fresh — and it covers 4 of your 8 weekly chest sets.
+                    No shoulder flags on your health screen, and you have a barbell and a bench.
+                  </p>
+                </div>
+                <div style="height:6px;"></div>
+              </div>
+              <div class="sheet-foot">
+                <button class="btn-ghost" type="button" style="width:auto;padding:11px 4px;display:flex;align-items:center;gap:6px;">
+                  <svg class="ico" style="font-size:16px;"><use href="#i-swap"/></svg>Swap this exercise
+                </button>
+                <span style="flex:1;"></span>
+                <button class="btn-ghost sheet-close" type="button" style="width:auto;padding:11px 4px;font-weight:600;color:var(--tp);">Done</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        <p class="hint">Tap a day card, then an exercise. <span class="mono">Esc</span> closes a sheet.</p>
+      </div>
+    </div>
+
+    <!-- ============================ NOTES ============================ -->
+    <div class="notes">
+
+      <article class="note on" data-note="1">
+        <p class="eyebrow">Stage 01</p>
+        <h2>The split</h2>
+        <p class="route">onboarding/plan.tsx — replaces today’s ready.tsx</p>
+        <p class="body">One question gets answered here: <b>what am I on?</b> The plan name is the headline, the
+          three chips carry the constraints it was built from, and every training day is a card you can open.
+          Nothing on this screen is a paragraph you have to read to continue.</p>
+
+        <div class="block">
+          <h3>Hierarchy, top to bottom</h3>
+          <ul>
+            <li><b>Plan name</b> — structural, not a jammed string. Days / length / goal live in chips underneath.</li>
+            <li><b>Week strip</b> — the shape of the commitment in one glance: four ink days, three rest.</li>
+            <li><b>Day cards</b> — weekday, label, counts, and a neutral bar of sets-by-muscle with the lead muscle in ink. This is the shared <span class="mono">DayCard</span> that Today and Plan reuse.</li>
+            <li><b>Why this plan</b> — a disclosure. It’s reassurance, not the point, and it stops the rationale being printed twice.</li>
+            <li><b>Targets</b> — a one-line strip. Today owns calories and macros from now on, so they don’t need a card here.</li>
+          </ul>
+        </div>
+
+        <div class="block">
+          <h3>Where the numbers come from</h3>
+          <div class="tablewrap">
+            <table class="data">
+              <tr><th>Screen element</th><th>Source</th></tr>
+              <tr><td>Plan name, chips</td><td>program.name, daysPerWeek, goal, profile.sessionLengthMin</td></tr>
+              <tr><td>Week strip</td><td>programDay.weekday + label</td></tr>
+              <tr><td>Card counts</td><td>count(programExercise), Σ targetSets, Σ sets × (rest + est. set time)</td></tr>
+              <tr><td>Sets-by-muscle bar</td><td>programExercise → exercise.primaryMuscle</td></tr>
+              <tr><td>Why this plan</td><td>generator rationale[] (split rule, MEV/MAV bias, rep banding, equipment)</td></tr>
+              <tr><td>Targets strip</td><td>computeTargets()</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="callout"><b>Fixes S6 and S7.</b> No more <span class="mono">names.join(' · ')</span> truncated to one
+          line, and no more six identical glass cards shouting at the same volume.</div>
+      </article>
+
+      <article class="note" data-note="2">
+        <p class="eyebrow">Stage 02</p>
+        <h2>A day</h2>
+        <p class="route">bottom sheet over the plan — not a route</p>
+        <p class="body">A sheet, deliberately. The plan stays visible behind it, so opening three days in a row
+          and then accepting never involves a back-stack. Height stops at 87% so the screen underneath is always
+          legible as “where I came from”.</p>
+
+        <div class="block">
+          <h3>What it adds over the card</h3>
+          <ul>
+            <li><b>The real list</b>, in program order, with sets × rep range and RPE — the thing the plan screen only counts.</li>
+            <li><b>A pattern tag per row</b> (compound / secondary / isolation) so the ordering rule is visible, not just asserted.</li>
+            <li><b>Sets by muscle for this session</b>, plus one line placing it in the week. Weekly volume vs MEV/MAV stays on the Plan tab — one owner per number.</li>
+            <li><b>Swap an exercise</b> lives here, so substitution isn’t a mid-session-only power.</li>
+          </ul>
+        </div>
+
+        <div class="callout">Sheets over routes is the whole reason the “go back and accept” step in your flow
+          works: <b>the accept button was never more than one swipe away.</b></div>
+      </article>
+
+      <article class="note" data-note="3">
+        <p class="eyebrow">Stage 03</p>
+        <h2>An exercise</h2>
+        <p class="route">nested sheet — 92%, over the day sheet</p>
+        <p class="body">Three questions, answered in a fixed order every time, so the screen is learnable:
+          <b>what is this</b>, <b>how do I do it</b>, <b>why is it here</b>. Under 120 words of prose visible;
+          everything else is a number, a chip, or a picture.</p>
+
+        <div class="block">
+          <h3>The six blocks, always in this order</h3>
+          <ul>
+            <li><b>Demo</b> — a short loop, top of the sheet. When <span class="mono">exercise.mediaUrl</span> is null the tile is dropped entirely; no broken frame, the muscle map carries it.</li>
+            <li><b>One-line definition</b> — what the movement is, in the user’s words. Never the dataset’s instruction blob.</li>
+            <li><b>Your prescription</b> — sets / reps / RPE / rest as four tabular figures, plus the progression sentence. This is the app talking about <em>you</em>, so it sits above the generic content.</li>
+            <li><b>How to do it</b> — four cues, max. Setup, the eccentric, the concentric, the stop condition.</li>
+            <li><b>Watch for</b> — two mistakes, red. Red is the drive/intensity signal, and a form warning is the one place it earns a text colour.</li>
+            <li><b>What it works</b> — muscle map, primary saturated, secondary at 45%. Reads faster than three labels ever will.</li>
+            <li><b>Why it’s in your plan</b> — the generator’s reasoning in one sentence, tying the movement back to a rule and a number.</li>
+          </ul>
+        </div>
+
+        <div class="block">
+          <h3>Where the content comes from</h3>
+          <div class="tablewrap">
+            <table class="data">
+              <tr><th>Block</th><th>Source</th></tr>
+              <tr><td>Name, kit, difficulty</td><td>exercise.name / equipment / difficulty</td></tr>
+              <tr><td>Demo loop</td><td>exercise.mediaUrl — free-exercise-db two-frame images</td></tr>
+              <tr><td>Cues, mistakes</td><td>exercise.instructions, split into steps at seed time</td></tr>
+              <tr><td>Muscle map</td><td>primaryMuscle + secondaryMuscles</td></tr>
+              <tr><td>Prescription</td><td>programExercise.targetSets / targetRepMin / targetRepMax / targetRpe</td></tr>
+              <tr><td>Why it’s here</td><td>generator step 3–4 (pattern priority + weekly volume share)</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="callout">The 58-row seed has no <span class="mono">instructions</span> or
+          <span class="mono">mediaUrl</span> yet. <b>This sheet is the reason to finish the free-exercise-db
+          import</b> — it’s the first screen where those two columns are the content, not metadata.</div>
+      </article>
+
+      <article class="note" data-note="4">
+        <p class="eyebrow">Stage 04</p>
+        <h2>Accept</h2>
+        <p class="route">plan screen → completeOnboarding() → /today</p>
+        <p class="body">Acceptance is one button on the plan screen, present from the first second — browsing days
+          and exercises is optional depth, never a gate. Closing a sheet returns you to the plan with the day
+          card you opened still in view, and the button still under your thumb.</p>
+
+        <div class="block">
+          <h3>Rules</h3>
+          <ul>
+            <li><b>The confirmation is a toast, not a screen.</b> “Plan saved · first session Monday, Upper A”, then Today. A congratulations screen here is a wall between intent and action.</li>
+            <li><b>The button says what happens</b> — “Use this plan”, not “Continue”.</li>
+            <li><b>The escape hatch is real</b>: “Change my days or equipment” re-runs the generator with edited answers rather than making the user restart onboarding.</li>
+            <li><b>Account stays where it is</b>, but never last: it sits before this screen, so the plan is the final thing you see before the app.</li>
+          </ul>
+        </div>
+      </article>
+
+      <article class="note" data-note="5">
+        <p class="eyebrow">Stage 05</p>
+        <h2>Today</h2>
+        <p class="route">(app)/home.tsx — first-run state</p>
+        <p class="body">The landing screen answers <b>what do I do right now</b>, and on day one it has to
+          re-introduce the plan the user just accepted rather than acting like it never happened.</p>
+
+        <div class="block">
+          <h3>First-run composition</h3>
+          <ul>
+            <li><b>Rings first</b> — green outer for steps, red inner for active minutes, straight from Health Connect. This is the passive half of the app proving it’s alive before you’ve logged anything.</li>
+            <li><b>Plan strip</b> — name plus the same week strip from stage 01, today marked. The plan gets re-introduced, once.</li>
+            <li><b>Today’s session</b> — real rows (name + sets × reps), three shown, the rest collapsed into “+ 3 more”.</li>
+            <li><b>Energy card</b> — the calorie and macro targets onboarding computed, with the check-in entry point. Until it exists, this card is where the promised numbers went.</li>
+            <li><b>One primary action</b>, correct in both cases: training day → <em>Start Upper A</em>; rest day → <em>First session Monday · preview it</em>, which opens the day sheet. Never a dead end.</li>
+            <li><b>Streak reads 0</b> and that’s fine — day one is honest, not padded.</li>
+          </ul>
+        </div>
+
+        <div class="callout">First-run styling clears the moment one session is logged; from then on Today is the
+          normal screen.</div>
+      </article>
+    </div>
+  </div>
+
+  <!-- ============================ RESEARCH ============================ -->
+  <section class="section">
+    <p class="eyebrow">What the field does</p>
+    <h2>Five patterns worth stealing</h2>
+    <div class="cols">
+      <div class="card">
+        <h3>Show structure before you ask for commitment</h3>
+        <p>Fitbod asks about training experience, then shows a real first workout; equipment and finer goals come
+          later. Our plan screen is fully browsable — days, exercises, cues — before “Use this plan” is ever tapped.</p>
+        <a class="src" href="https://stormotion.io/blog/fitness-app-ux/">stormotion.io/blog/fitness-app-ux</a>
+      </div>
+      <div class="card">
+        <h3>Progressive disclosure, in stages</h3>
+        <p>The consistent advice is to stop dumping the program as one long form or one long page. Plan → day →
+          exercise gives three depths, and each one is a complete answer on its own.</p>
+        <a class="src" href="https://screensdesign.com/articles/fitness-app-onboarding-examples/">screensdesign.com · onboarding teardowns</a>
+      </div>
+      <div class="card">
+        <h3>Under a minute from goal to “start”</h3>
+        <p>Onboarding should reach plan-then-start fast. That’s why acceptance sits on the first screen of this
+          flow and the detail sheets are optional, not sequential steps.</p>
+        <a class="src" href="https://www.zfort.com/blog/How-to-Design-a-Fitness-App-UX-UI-Best-Practices-for-Engagement-and-Retention">zfort.com · engagement &amp; retention</a>
+      </div>
+      <div class="card">
+        <h3>Exercise detail is media + tags, not prose</h3>
+        <p>Fitbod’s 900-move library is the benchmark: a demo, muscle tags, a difficulty rating. We add the one
+          thing a generated plan can say that a library can’t — why this movement is in <em>your</em> week.</p>
+        <a class="src" href="https://www.gymnoteplus.com/blog/fitbod-vs-hevy">gymnoteplus.com · Fitbod vs Hevy</a>
+      </div>
+      <div class="card">
+        <h3>Keep the session screen out of it</h3>
+        <p>Everyone agrees the in-workout screen stays distraction-free. So the sheets stop at the exercise
+          detail; the how-to lives here, before the session, not on top of the scroll-dial.</p>
+        <a class="src" href="https://madappgang.com/blog/the-best-fitness-app-design-examples-and-typical-mistakes/">madappgang.com · typical mistakes</a>
+      </div>
+      <div class="card">
+        <h3>Explain the plan, don’t just assert it</h3>
+        <p>Coach-built apps (Ladder) sell the reasoning; generator apps often hide it. Ours is rule-based and
+          auditable, so every screen can name the rule that produced it — a real advantage, used sparingly.</p>
+        <a class="src" href="https://www.outdoorsynomad.com/ladder-fitness-app-review/">outdoorsynomad.com · Ladder review</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="twoup">
+      <div>
+        <p class="eyebrow">Held to</p>
+        <h2>The system, unchanged</h2>
+        <ul class="block" style="padding-left:18px;color:var(--doc-ts);font-size:14px;line-height:1.65;margin-top:14px;">
+          <li>Every surface is glass over red/green ambient blobs; only buttons, selected cards and the ink center band stay opaque.</li>
+          <li>Ink is the only emphasis colour. Red appears on active minutes and form warnings; green on “saved”, goal progress and confirm actions. Nothing else is coloured.</li>
+          <li>Sets-by-muscle bars are neutral with the lead muscle in ink — volume isn’t drive or progress, so it doesn’t get a hue.</li>
+          <li>Inter throughout, tabular figures on every prescription and target.</li>
+          <li>Dark mode is the archived charcoal palette, switched at token level. Try the toggle up top.</li>
+        </ul>
+      </div>
+      <div>
+        <p class="eyebrow">Not built here</p>
+        <h2>Left out on purpose</h2>
+        <ul class="block" style="padding-left:18px;color:var(--doc-ts);font-size:14px;line-height:1.65;margin-top:14px;">
+          <li><b>Swap-exercise flow.</b> The entry points are placed; the picker is the library screen, which already exists and just needs rerouting under Plan.</li>
+          <li><b>Lower A / Upper B / Lower B sheets.</b> One day is the component; the other three are data.</li>
+          <li><b>Drag-to-dismiss physics.</b> Specced as a gesture, prototyped as a tap — it’s a native concern, not a layout one.</li>
+          <li><b>The rest-day variant of Today.</b> Described in stage 05; same screen, different primary action.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Project Alpha · post-onboarding handoff · Aug 2026</span>
+    <span class="mono">design-system.md · docs/05-app-structure.md §4–5</span>
+  </footer>
+</div>
+
+<script>
+  (function(){
+    var root=document.documentElement, btn=document.getElementById('themeBtn');
+    function sysDark(){return window.matchMedia('(prefers-color-scheme: dark)').matches;}
+    function label(){var dark=root.dataset.theme?root.dataset.theme==='dark':sysDark();btn.textContent=dark?'Light':'Dark';}
+    btn.addEventListener('click',function(){
+      var dark=root.dataset.theme?root.dataset.theme==='dark':sysDark();
+      root.dataset.theme=dark?'light':'dark';label();
+    });
+    label();
+
+    var scrim=document.getElementById('scrim'),
+        sheetDay=document.getElementById('sheetDay'),
+        sheetEx=document.getElementById('sheetEx'),
+        scPlan=document.getElementById('scPlan'),
+        scToday=document.getElementById('scToday'),
+        toast=document.getElementById('toast'),
+        nodes=document.querySelectorAll('.stagenode'),
+        notes=document.querySelectorAll('.note');
+
+    function mark(n){
+      nodes.forEach(function(b){b.setAttribute('aria-current',b.dataset.stage===String(n)?'true':'false');});
+      notes.forEach(function(a){a.classList.toggle('on',a.dataset.note===String(n));});
+    }
+    function stage(n){
+      n=String(n);
+      var day=(n==='2'||n==='3'), ex=(n==='3'), today=(n==='5');
+      scPlan.classList.toggle('on',!today);
+      scToday.classList.toggle('on',today);
+      sheetDay.classList.toggle('on',day);
+      sheetEx.classList.toggle('on',ex);
+      scrim.classList.toggle('on',day);
+      toast.classList.toggle('on',n==='4');
+      if(n==='4'){clearTimeout(stage._t);stage._t=setTimeout(function(){if(document.querySelector('.stagenode[data-stage="4"]').getAttribute('aria-current')==='true')stage(5);},1500);}
+      mark(n);
+    }
+    nodes.forEach(function(b){b.addEventListener('click',function(){stage(b.dataset.stage);});});
+    document.querySelectorAll('.daycard').forEach(function(c){c.addEventListener('click',function(){stage(2);});});
+    document.querySelectorAll('.exrow[data-ex]').forEach(function(r){r.addEventListener('click',function(){stage(3);});});
+    document.getElementById('acceptBtn').addEventListener('click',function(){stage(4);});
+    document.getElementById('backToPlan').addEventListener('click',function(){stage(1);});
+    document.querySelectorAll('.sheet-close').forEach(function(b){
+      b.addEventListener('click',function(e){e.stopPropagation();stage(sheetEx.classList.contains('on')?2:1);});
+    });
+    scrim.addEventListener('click',function(){stage(1);});
+    document.addEventListener('keydown',function(e){
+      if(e.key!=='Escape')return;
+      if(sheetEx.classList.contains('on'))stage(2);
+      else if(sheetDay.classList.contains('on'))stage(1);
+    });
+  })();
+</script>

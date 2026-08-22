@@ -15,6 +15,9 @@ the finalized design system, and the runnable prototype.
 - [prototype/](prototype/) — self-contained clickable HTML prototype of the
   full screen set, with a light/dark toggle. This is the finalized visual
   reference for building the app.
+  [prototype/plan-handoff.html](prototype/plan-handoff.html) is the separate
+  spec for what happens *after* onboarding: the plan, a day, an exercise,
+  accepting it, and Today's first run.
 
 ## Running the prototype
 

@@ -82,11 +82,14 @@ Home minimal / home full / full gym. Filters the exercise pool.
 Recap of all core inputs with edit-in-place links. No silent assumptions —
 the user sees exactly what feeds generation.
 
-### 11. Plan ready + your numbers
-- Generated split summary (template + why it was chosen).
-- **Your daily targets**: calorie target + protein/fat/carb macros, plus BMI
-  and TDEE, explained in one line each.
-- Prompt: "Complete your profile" → progressive enrichment (skippable).
+### 11. Your plan
+- Generated split: name, the week, and one card per training day.
+- Tapping a day opens it (exercises, sets × reps); tapping an exercise opens
+  its demo, cues and why it's in the plan. Both are sheets, so accepting is
+  never more than a swipe away.
+- Daily targets are one line here — Today owns them from this point on.
+- Accepting the plan lands on Today. Full spec:
+  [design/prototype/plan-handoff.html](../design/prototype/plan-handoff.html).
 
 ---
 

@@ -61,6 +61,9 @@ on-device fitness data to that backend is a separate, still-open question.
 - [03-onboarding-flow.md](03-onboarding-flow.md) — screen-by-screen onboarding
 - [04-home-logging-ux.md](04-home-logging-ux.md) — home screen and scroll-dial
   logging interaction
+- [05-app-structure.md](05-app-structure.md) — phase-2 information
+  architecture, the metric spine (which screen owns which number), and the
+  post-onboarding handoff
 - [06-health-calculations.md](06-health-calculations.md) — BMI/BMR/TDEE, macro
   targets, PAR-Q screening, injury→exclusion map
 

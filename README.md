@@ -58,6 +58,7 @@ project-alpha/
 | Understand the health/nutrition math | [docs/06-health-calculations.md](docs/06-health-calculations.md) |
 | Understand how programs are generated | [docs/02-split-generator-logic.md](docs/02-split-generator-logic.md) |
 | Read home / scroll-dial logging UX | [docs/04-home-logging-ux.md](docs/04-home-logging-ux.md) |
+| See the app's IA and which screen owns which number | [docs/05-app-structure.md](docs/05-app-structure.md) |
 
 **Architecture & backend**
 | I want to… | Go to |

@@ -6,6 +6,67 @@ When the design changes, add an entry here — this is the "why" behind
 
 ---
 
+## 2026-08-22 — Post-onboarding handoff: four stages, two sheets
+
+Designed as a clickable spec in
+[prototype/plan-handoff.html](prototype/plan-handoff.html) (split · day ·
+exercise · accept · Today).
+
+- **Depth is sheets, not routes.** A day opens as an 87% bottom sheet over the
+  plan; an exercise opens as a 92% sheet over that. The plan — and its "Use
+  this plan" button — stays one swipe behind at every depth, so browsing three
+  days and then accepting never touches a back-stack. This is what makes the
+  "go look, come back, accept" loop work.
+- **Accept is available from second one.** The detail sheets are optional
+  depth, never sequential steps: nothing between onboarding and Today is a
+  gate. Confirmation is a toast ("Plan saved · first session Monday, Upper A"),
+  not a congratulations screen standing between intent and action.
+- **The exercise sheet answers three questions in a fixed order** — what is
+  this, how do I do it, why is it in *my* plan — so the screen is learnable.
+  Six blocks: demo loop, one-line definition, your prescription (sets/reps/
+  RPE/rest as tabular figures), four cues max, two mistakes, muscle map,
+  generator reasoning. Under ~120 words of prose visible; the rest is numbers,
+  chips and the map. Prescription sits *above* the generic how-to: the app
+  talking about you outranks library content.
+- **Red earns its second text use.** Form warnings ("elbows flared to 90°")
+  are drive/intensity, so they get red; sets-by-muscle bars stay neutral grey
+  with the lead muscle in ink, because volume is neither drive nor progress.
+- **A null `mediaUrl` drops the demo tile entirely** rather than rendering a
+  broken frame — the muscle map carries the block on its own. This sheet is
+  the reason to finish the free-exercise-db import: `instructions` and
+  `mediaUrl` stop being metadata here and become the content.
+- **Today's first run re-introduces the plan** instead of pretending
+  onboarding never happened: rings, then the plan name + week strip with today
+  marked, then real exercise rows, then the energy card, then one primary
+  action that is correct on a rest day too ([docs/05 §4](../docs/05-app-structure.md)).
+
+## 2026-08-22 — One dial, one unit tab
+
+- **Height is dialled, not typed.** It was the odd one out: a keyboard field
+  sitting between a calendar and a wheel. It now opens the same sheet — a
+  single column of centimetres, or feet and inches side by side. Nothing on
+  the screen asks for the keyboard any more, which is the point of the step:
+  four taps and a scroll, no typing.
+- **The unit toggle has one home.** Compact `cm/ft` and `kg/lb` tabs sit
+  inline on their field rows, so the unit is visible without opening
+  anything, and switching it doesn't cost a sheet. That paid for deleting the
+  weight sheet's full-width Kilograms/Pounds control and its KG/GRAMS column
+  captions — the sheet is now wheels and Done. Tenths read `.0`–`.9` rather
+  than as grams, which needed a caption to be legible at all.
+- **The calendar stopped resizing.** Months span four to six week-rows, so
+  paging changed the sheet's height under your thumb. The grid now always
+  draws six rows; empty ones are blank. A picker that moves while you aim at
+  it is worse than one with a little dead space.
+- **The two dial columns lean into each other.** Each column was centred in
+  its own half, so `5′` and `9″` sat at opposite ends of the selection band
+  and read as two separate numbers. The left column is now right-aligned and
+  the right one left-aligned, 28dp apart — one value, centred, whichever unit
+  is showing. (18dp first; at the selected row's 26pt the two halves collided.)
+
+- **The two plain rows lost weight.** Sex and "Weight is" were taller than
+  every labelled field around them; with a compact segmented and 46dp of
+  minimum height they line up with the rest.
+
 ## 2026-08-21 — Brand mark lands; form keeps its labelled fields
 
 - **Real logo in place of the placeholder.** `mobile/assets/main.svg` — a

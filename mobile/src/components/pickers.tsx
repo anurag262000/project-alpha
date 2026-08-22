@@ -5,7 +5,7 @@ import {
   Pressable,
   Modal,
   ScrollView,
-  TextInput,
+  StyleSheet,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
 } from 'react-native';
@@ -48,49 +48,54 @@ function Sheet({
   const insets = useSafeAreaInsets();
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable
-        onPress={onClose}
-        style={{ flex: 1, backgroundColor: 'rgba(10,11,13,0.45)', justifyContent: 'flex-end' }}
-      >
-        {/* Swallow taps inside the sheet so they don't dismiss it. */}
-        <Pressable onPress={() => {}}>
+      <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+        {/*
+          The backdrop is a *sibling* of the sheet, not its parent. Wrapping the
+          sheet in a Pressable (to swallow taps) puts a touch responder above the
+          dials, and on Android that responder eats the drag — the wheels look
+          right and simply never scroll. Taps on the sheet now bubble up to a
+          View that ignores them, which is the same result without the ancestor.
+        */}
+        <Pressable
+          onPress={onClose}
+          style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(10,11,13,0.45)' }]}
+        />
+        <View
+          style={{
+            backgroundColor: theme.card,
+            borderTopLeftRadius: 24,
+            borderTopRightRadius: 24,
+            paddingHorizontal: 16,
+            paddingTop: 10,
+            paddingBottom: Math.max(insets.bottom, 16) + 8,
+          }}
+        >
           <View
             style={{
-              backgroundColor: theme.card,
-              borderTopLeftRadius: 24,
-              borderTopRightRadius: 24,
-              paddingHorizontal: 16,
-              paddingTop: 10,
-              paddingBottom: Math.max(insets.bottom, 16) + 8,
+              alignSelf: 'center',
+              width: 36,
+              height: 4,
+              borderRadius: 2,
+              backgroundColor: theme.track,
+              marginBottom: 14,
+            }}
+          />
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 14,
             }}
           >
-            <View
-              style={{
-                alignSelf: 'center',
-                width: 36,
-                height: 4,
-                borderRadius: 2,
-                backgroundColor: theme.track,
-                marginBottom: 14,
-              }}
-            />
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: 14,
-              }}
-            >
-              <Cap>{title}</Cap>
-              <Pressable onPress={onClose} hitSlop={10}>
-                <Text style={{ fontSize: 14, fontWeight: '600', color: theme.textPrimary }}>Done</Text>
-              </Pressable>
-            </View>
-            {children}
+            <Cap>{title}</Cap>
+            <Pressable onPress={onClose} hitSlop={10}>
+              <Text style={{ fontSize: 14, fontWeight: '600', color: theme.textPrimary }}>Done</Text>
+            </Pressable>
           </View>
-        </Pressable>
-      </Pressable>
+          {children}
+        </View>
+      </View>
     </Modal>
   );
 }
@@ -157,10 +162,12 @@ function CalendarGrid({
   const month = view.getMonth();
   const firstDow = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const cells: (number | null)[] = [
-    ...Array(firstDow).fill(null),
-    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
-  ];
+  // Always six week-rows: a 4-, 5- or 6-row month would otherwise resize the
+  // sheet under your thumb as you page through it.
+  const cells: (number | null)[] = Array.from({ length: 42 }, (_, i) => {
+    const day = i - firstDow + 1;
+    return day >= 1 && day <= daysInMonth ? day : null;
+  });
 
   const step = (deltaMonths: number) => {
     const next = new Date(year, month + deltaMonths, 1);
@@ -250,110 +257,10 @@ function CalendarGrid({
   );
 }
 
-// --- Height ----------------------------------------------------------------
-
-/**
- * Height typed inline, with the unit toggle in the same row rather than on a
- * line of its own. `onChange` always reports centimetres.
- */
-export function HeightField({
-  valueCm,
-  onChange,
-  error,
-}: {
-  valueCm: number | null;
-  onChange: (cm: number | null) => void;
-  error?: string;
-}) {
-  const { theme } = useTheme();
-  const [unit, setUnit] = useState<'cm' | 'ft'>('cm');
-  const [cmText, setCmText] = useState(valueCm ? String(valueCm) : '');
-  const [ft, setFt] = useState('');
-  const [inch, setInch] = useState('');
-
-  const switchUnit = (next: 'cm' | 'ft') => {
-    if (next === unit) return;
-    if (next === 'ft') {
-      if (valueCm) {
-        const { ft: f, inch: i } = cmToFtIn(valueCm);
-        setFt(String(f));
-        setInch(String(i));
-      }
-    } else if (valueCm) {
-      setCmText(String(round1(valueCm)));
-    }
-    setUnit(next);
-  };
-
-  const onCm = (t: string) => {
-    setCmText(t);
-    const n = parseFloat(t);
-    onChange(Number.isFinite(n) ? n : null);
-  };
-
-  const onImperial = (f: string, i: string) => {
-    setFt(f);
-    setInch(i);
-    if (f === '' && i === '') return onChange(null);
-    const cm = ftInToCm(parseInt(f, 10) || 0, parseFloat(i) || 0);
-    onChange(cm > 0 ? cm : null);
-  };
-
-  const input = { fontSize: 15, color: theme.textPrimary, paddingVertical: 6 } as const;
-
-  return (
-    <LabeledField label="Height" error={error}>
-      {unit === 'cm' ? (
-        <TextInput
-          value={cmText}
-          onChangeText={onCm}
-          placeholder="e.g. 178"
-          placeholderTextColor={theme.textMuted}
-          keyboardType="numeric"
-          maxLength={5}
-          style={[input, { flex: 1 }]}
-        />
-      ) : (
-        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
-          <TextInput
-            value={ft}
-            onChangeText={(t) => onImperial(t, inch)}
-            placeholder="5"
-            placeholderTextColor={theme.textMuted}
-            keyboardType="numeric"
-            maxLength={1}
-            style={[input, { minWidth: 18 }]}
-          />
-          <Text style={{ fontSize: 14, color: theme.textMuted, marginRight: 10 }}>′</Text>
-          <TextInput
-            value={inch}
-            onChangeText={(t) => onImperial(ft, t)}
-            placeholder="10"
-            placeholderTextColor={theme.textMuted}
-            keyboardType="numeric"
-            maxLength={2}
-            style={[input, { minWidth: 24 }]}
-          />
-          <Text style={{ fontSize: 14, color: theme.textMuted }}>″</Text>
-        </View>
-      )}
-      <Segmented
-        compact
-        value={unit}
-        onChange={switchUnit}
-        options={[
-          { label: 'cm', value: 'cm' },
-          { label: 'ft', value: 'ft' },
-        ]}
-        style={{ width: 84 }}
-      />
-    </LabeledField>
-  );
-}
-
 // --- Scroll dial -----------------------------------------------------------
 
 const ITEM_H = 44;
+const GAP = 14; // half the space between two columns leaning into each other
 const VISIBLE = 5;
 const DIAL_H = ITEM_H * VISIBLE;
 
@@ -366,30 +273,48 @@ export function Dial({
   value,
   onChange,
   format = String,
+  align = 'center',
 }: {
   values: number[];
   value: number;
   onChange: (v: number) => void;
   format?: (v: number) => string;
+  /** Two columns read as one number when they lean into each other. */
+  align?: 'center' | 'left' | 'right';
 }) {
   const { theme } = useTheme();
   const ref = useRef<ScrollView>(null);
   const index = Math.max(0, values.indexOf(value));
   const [active, setActive] = useState(index);
-  const initial = useRef(index).current;
+  // While a finger is on the wheel the native snap owns the offset; correcting
+  // it from here mid-gesture is what leaves a column resting half a row off.
+  const dragging = useRef(false);
+  // The row this wheel last put itself on. A value that comes back to us as
+  // the echo of our own scroll must not trigger a correcting scrollTo: that
+  // animation lands on top of the native snap and the column rests off-grid.
+  const settled = useRef(index);
 
   useEffect(() => {
-    if (index !== active) {
-      setActive(index);
-      ref.current?.scrollTo({ y: index * ITEM_H, animated: true });
-    }
+    if (dragging.current || index === settled.current) return;
+    settled.current = index;
+    setActive(index);
+    ref.current?.scrollTo({ y: index * ITEM_H, animated: true });
   }, [index]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const indexAt = (e: NativeSyntheticEvent<NativeScrollEvent>) =>
     clamp(Math.round(e.nativeEvent.contentOffset.y / ITEM_H), 0, values.length - 1);
 
-  const commit = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const v = values[indexAt(e)];
+  const commit = (e: NativeSyntheticEvent<NativeScrollEvent>, snap: boolean) => {
+    dragging.current = false;
+    const i = indexAt(e);
+    settled.current = i;
+    // Whatever left it off-grid — an interrupted snap, a clamped index — the
+    // wheel is only allowed to come to rest on a row. Never during a drag:
+    // momentum is still to come and would fight it.
+    if (snap && Math.abs(e.nativeEvent.contentOffset.y - i * ITEM_H) > 0.5) {
+      ref.current?.scrollTo({ y: i * ITEM_H, animated: true });
+    }
+    const v = values[i];
     if (v !== value) onChange(v);
   };
 
@@ -402,19 +327,38 @@ export function Dial({
       snapToInterval={ITEM_H}
       decelerationRate="fast"
       scrollEventThrottle={16}
-      onLayout={() => ref.current?.scrollTo({ y: initial * ITEM_H, animated: false })}
+      // Not onLayout: on Android the ScrollView lays out before its content is
+      // measured, so scrolling from there is a no-op and the wheel opens on its
+      // first item. onContentSizeChange also re-centres on a unit switch.
+      onContentSizeChange={() => ref.current?.scrollTo({ y: index * ITEM_H, animated: false })}
       onScroll={(e) => setActive(indexAt(e))}
-      onScrollEndDrag={commit}
-      onMomentumScrollEnd={commit}
+      onScrollBeginDrag={() => {
+        dragging.current = true;
+      }}
+      onScrollEndDrag={(e) => commit(e, false)}
+      onMomentumScrollEnd={(e) => commit(e, true)}
     >
       {values.map((v, i) => {
         const d = Math.abs(i - active);
         return (
-          <View key={v} style={{ height: ITEM_H, alignItems: 'center', justifyContent: 'center' }}>
+          <View
+            key={v}
+            style={{
+              height: ITEM_H,
+              justifyContent: 'center',
+              alignItems: align === 'center' ? 'center' : align === 'left' ? 'flex-start' : 'flex-end',
+              paddingLeft: align === 'left' ? GAP : 0,
+              paddingRight: align === 'right' ? GAP : 0,
+            }}
+          >
             <Text
               style={{
                 fontSize: d === 0 ? 26 : 16,
                 fontWeight: d === 0 ? '700' : '400',
+                // A fixed line box keeps both columns on the same baseline even
+                // though the selected row is ten points bigger.
+                lineHeight: ITEM_H,
+                textAlignVertical: 'center',
                 color: d === 0 ? theme.onInk : d === 1 ? theme.textMuted : theme.textDisabled,
               }}
             >
@@ -427,18 +371,153 @@ export function Dial({
   );
 }
 
-// --- Weight ----------------------------------------------------------------
-
-const MIN_KG = 30;
-const MAX_KG = 250;
-
 // ponytail: plain ScrollViews render every notch (~490 rows worst case, lb).
 // Swap in a FlatList if the wheel ever feels heavy on a low-end device.
 const range = (from: number, to: number) => Array.from({ length: to - from + 1 }, (_, i) => from + i);
 const TENTHS = range(0, 9);
 
+/** The wheels with the ink selection band behind them — the dial pattern. */
+function DialRow({ children }: { children: React.ReactNode }) {
+  const { theme } = useTheme();
+  return (
+    <View style={{ position: 'relative' }}>
+      <View
+        pointerEvents="none"
+        style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          top: (DIAL_H - ITEM_H) / 2 - 4,
+          height: ITEM_H + 8,
+          borderRadius: 14,
+          backgroundColor: theme.ink,
+        }}
+      />
+      <View style={{ flexDirection: 'row' }}>{children}</View>
+    </View>
+  );
+}
+
+/** Value + inline unit tabs, tapping the row opens the dial sheet. */
+function DialField<U extends string>({
+  label,
+  value,
+  unit,
+  units,
+  onUnit,
+  error,
+  muted,
+  children,
+}: {
+  label: string;
+  value: string;
+  unit: U;
+  units: { label: string; value: U }[];
+  onUnit: (u: U) => void;
+  error?: string;
+  /** Nothing chosen yet: the value line reads as a placeholder. */
+  muted?: boolean;
+  children: React.ReactNode;
+}) {
+  const { theme } = useTheme();
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <LabeledField label={label} onPress={() => setOpen(true)} error={error}>
+        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <Text style={{ fontSize: 15, fontWeight: '500', color: muted ? theme.textMuted : theme.textPrimary }}>
+            {value}
+          </Text>
+          <MaterialCommunityIcons name="unfold-more-horizontal" size={16} color={theme.textMuted} />
+        </View>
+        <Segmented compact value={unit} onChange={onUnit} options={units} style={{ width: 84 }} />
+      </LabeledField>
+      <Sheet visible={open} onClose={() => setOpen(false)} title={label}>
+        {children}
+        <Text style={{ fontSize: 11, color: theme.textMuted, textAlign: 'center', marginTop: 10 }}>
+          scroll to dial · no keyboard
+        </Text>
+      </Sheet>
+    </>
+  );
+}
+
+// --- Height ----------------------------------------------------------------
+
+const MIN_CM = 100;
+const MAX_CM = 250;
+const CMS = range(MIN_CM, MAX_CM);
+const FEET = range(3, 8);
+const INCHES = range(0, 11);
+
 /**
- * Row showing the current weight; opens the dial in a sheet. Keeping the wheels
+ * Height on the same dial as weight — one column in cm, feet + inches in
+ * imperial. `onChange` always reports centimetres.
+ */
+export function HeightField({
+  valueCm,
+  onChange,
+  error,
+}: {
+  valueCm: number | null;
+  onChange: (cm: number | null) => void;
+  error?: string;
+}) {
+  const [unit, setUnit] = useState<'cm' | 'ft'>('cm');
+  // No value yet: the wheels open on a plausible height and Done commits it.
+  const cm = clamp(valueCm ?? 170, MIN_CM, MAX_CM);
+  const { ft, inch } = cmToFtIn(cm);
+
+  return (
+    <DialField
+      label="Height"
+      value={
+        valueCm === null ? 'Select your height' : unit === 'cm' ? `${Math.round(cm)} cm` : `${ft}′ ${inch}″`
+      }
+      muted={valueCm === null}
+      unit={unit}
+      units={[
+        { label: 'cm', value: 'cm' },
+        { label: 'ft', value: 'ft' },
+      ]}
+      onUnit={setUnit}
+      error={error}
+    >
+      <DialRow>
+        {unit === 'cm' ? (
+          <Dial values={CMS} value={Math.round(cm)} onChange={onChange} />
+        ) : (
+          <>
+            <Dial
+              key="ft"
+              values={FEET}
+              value={ft}
+              onChange={(f) => onChange(ftInToCm(f, inch))}
+              format={(f) => `${f}′`}
+              align="right"
+            />
+            <Dial
+              key="in"
+              values={INCHES}
+              value={inch}
+              onChange={(i) => onChange(ftInToCm(ft, i))}
+              format={(i) => `${i}″`}
+              align="left"
+            />
+          </>
+        )}
+      </DialRow>
+    </DialField>
+  );
+}
+
+// --- Weight ----------------------------------------------------------------
+
+const MIN_KG = 30;
+const MAX_KG = 250;
+
+/**
+ * Weight on a two-column dial (whole + tenths) in a sheet. Keeping the wheels
  * out of the page means they can't fight the screen's own scrolling, and the
  * step fits without scrolling at all. `onChange` always reports kilograms.
  */
@@ -449,8 +528,6 @@ export function WeightField({
   valueKg: number;
   onChange: (kg: number) => void;
 }) {
-  const { theme } = useTheme();
-  const [open, setOpen] = useState(false);
   const [unit, setUnit] = useState<'kg' | 'lb'>('kg');
 
   const total = unit === 'kg' ? valueKg : valueKg / KG_PER_LB;
@@ -458,77 +535,47 @@ export function WeightField({
     ? range(MIN_KG, MAX_KG)
     : range(Math.ceil(MIN_KG / KG_PER_LB), Math.floor(MAX_KG / KG_PER_LB));
 
-  const { whole, tenth } = splitTenths(total);
+  // round1 first: the lb⇄kg round trip leaves floating-point dust that would
+  // otherwise land the tenths wheel one notch off what the user just picked.
+  const { whole, tenth } = splitTenths(round1(total));
   const major = clamp(whole, majors[0], majors[majors.length - 1]);
 
   const emit = (m: number, t: number) => {
     const v = m + t / 10;
-    onChange(round1(unit === 'kg' ? v : v * KG_PER_LB));
+    // kg is rounded to the tenth the wheels show; lb is stored at full
+    // precision, because rounding *that* to 0.1 kg is a different weight in
+    // pounds — the wheel would read back a tenth away from where it stopped.
+    onChange(unit === 'kg' ? round1(v) : v * KG_PER_LB);
   };
 
   return (
-    <>
-      <LabeledField label="Weight" onPress={() => setOpen(true)}>
-        <Text style={{ fontSize: 15, fontWeight: '500', color: theme.textPrimary }}>
-          {`${round1(total)} ${unit}`}
-        </Text>
-        <MaterialCommunityIcons name="unfold-more-horizontal" size={18} color={theme.textMuted} />
-      </LabeledField>
-
-      <Sheet visible={open} onClose={() => setOpen(false)} title="Weight">
-        <Segmented
-          value={unit}
-          onChange={setUnit}
-          options={[
-            { label: 'Kilograms', value: 'kg' },
-            { label: 'Pounds', value: 'lb' },
-          ]}
-          style={{ marginBottom: 14 }}
+    <DialField
+      label="Weight"
+      value={`${round1(total)} ${unit}`}
+      unit={unit}
+      units={[
+        { label: 'kg', value: 'kg' },
+        { label: 'lb', value: 'lb' },
+      ]}
+      onUnit={setUnit}
+    >
+      <DialRow>
+        <Dial
+          key={`${unit}-major`}
+          values={majors}
+          value={major}
+          onChange={(m) => emit(m, tenth)}
+          align="right"
         />
-
-        <View style={{ flexDirection: 'row' }}>
-          <Cap style={{ flex: 1, textAlign: 'center', paddingBottom: 6 }}>{unit}</Cap>
-          <Cap style={{ flex: 1, textAlign: 'center', paddingBottom: 6 }}>
-            {unit === 'kg' ? 'grams' : '0.1 lb'}
-          </Cap>
-        </View>
-
-        <View style={{ position: 'relative' }}>
-          {/* Ink selection band — the dial pattern from design-system.md. */}
-          <View
-            pointerEvents="none"
-            style={{
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              top: (DIAL_H - ITEM_H) / 2 - 4,
-              height: ITEM_H + 8,
-              borderRadius: 14,
-              backgroundColor: theme.ink,
-            }}
-          />
-          <View style={{ flexDirection: 'row' }}>
-            <Dial
-              key={`${unit}-major`}
-              values={majors}
-              value={major}
-              onChange={(m) => emit(m, tenth)}
-            />
-            <Dial
-              key={`${unit}-tenth`}
-              values={TENTHS}
-              value={tenth}
-              onChange={(t) => emit(major, t)}
-              format={(t) => (unit === 'kg' ? String(t * 100).padStart(3, '0') : `.${t}`)}
-            />
-          </View>
-        </View>
-
-        <Text style={{ fontSize: 11, color: theme.textMuted, textAlign: 'center', marginTop: 10 }}>
-          scroll to dial · no keyboard
-          {unit === 'lb' ? `  ·  ${round1(valueKg)} kg` : ''}
-        </Text>
-      </Sheet>
-    </>
+        <Dial
+          key={`${unit}-tenth`}
+          values={TENTHS}
+          value={tenth}
+          onChange={(t) => emit(major, t)}
+          format={(t) => `.${t}`}
+          align="left"
+        />
+      </DialRow>
+    </DialField>
   );
 }

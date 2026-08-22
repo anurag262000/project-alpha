@@ -43,13 +43,14 @@ export default function Basics() {
           <View style={fieldRow(theme)}>
             <Text style={{ fontSize: 14, color: theme.textSecondary }}>Sex</Text>
             <Segmented
+              compact
               value={sex}
               onChange={setSex}
               options={[
                 { label: 'Male', value: 'male' },
                 { label: 'Female', value: 'female' },
               ]}
-              style={{ width: 180 }}
+              style={{ width: 156 }}
             />
           </View>
 
@@ -70,13 +71,14 @@ export default function Basics() {
           <View style={fieldRow(theme)}>
             <Text style={{ fontSize: 14, color: theme.textSecondary }}>Weight is</Text>
             <Segmented
+              compact
               value={accuracy}
               onChange={setAccuracy}
               options={[
                 { label: 'Estimated', value: 'estimated' },
                 { label: 'Measured', value: 'measured' },
               ]}
-              style={{ width: 200 }}
+              style={{ width: 186 }}
             />
           </View>
         </View>
@@ -125,8 +127,9 @@ const fieldRow = (theme: any) => ({
   flexDirection: 'row' as const,
   justifyContent: 'space-between' as const,
   alignItems: 'center' as const,
-  paddingVertical: 12,
-  paddingHorizontal: 16,
+  minHeight: 46,
+  paddingVertical: 5,
+  paddingHorizontal: 14,
   borderRadius: 14,
   backgroundColor: theme.fieldBg,
   borderWidth: 1,

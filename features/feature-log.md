@@ -58,6 +58,61 @@ Profile → "Complete your profile".
   above each input on its own surface) — the established form language wins
   over pure compactness. The fixes stay: dial and calendar open as sheets,
   cm/ft inline, opaque sheets, no scrolling.
+- 2026-08-22 — **Height moves onto the dial too, and the unit tabs become one
+  pattern.** Height is no longer a typed field: tapping it opens the same
+  sheet-mounted wheel as weight — one column in cm, feet + inches in imperial
+  — so both body inputs are dialled, not typed. The unit toggle now lives
+  inline on the field row for both (compact `cm/ft`, `kg/lb`), which let the
+  weight sheet drop its full-width Kilograms/Pounds control and its column
+  captions; the tenths column reads `.0`–`.9` instead of grams. Sex and
+  "Weight is" rows were thinned to match the field rows' height. Height with
+  no value yet shows a placeholder and opens the wheel on 170 cm.
+- 2026-08-22 — Calendar grid pinned to six week-rows so paging months no
+  longer resizes the sheet.
+- 2026-08-22 — **Dials wouldn't scroll on Android.** The sheet wrapped its
+  body in a `Pressable` (to stop taps reaching the dismiss backdrop), which
+  held the touch responder above the wheels; the backdrop is now a sibling of
+  the sheet instead of its ancestor. The wheels also opened on their first
+  item because the initial `scrollTo` ran from `onLayout`, before the content
+  was measured — moved to `onContentSizeChange`, which re-centres on a unit
+  switch too.
+- 2026-08-22 — Dial polish: paired columns are aligned inward so the two
+  halves read as one number, the row's line box is fixed so the bigger
+  selected row can't shift a column's baseline, and the wheel no longer
+  corrects its own offset mid-gesture — that fight with the native snap was
+  what left a column resting half a row off.
+- 2026-08-22 — **A column still rested half a row off-grid.** Two causes, both
+  real. (a) The dial re-centres itself whenever `value` changes from outside,
+  and its *own* committed value arrives as exactly that — an animated
+  `scrollTo` landing on top of the native snap. It now remembers the row it
+  put itself on and ignores the echo, and every rest ends with an on-grid
+  correction when the offset drifted regardless of cause. (b) In pounds the
+  wheels re-derive their columns from a kilogram value that had been rounded
+  to 0.1 kg — a different weight in pounds — so the tenths column read back a
+  notch away from where it stopped. Pounds are now stored unrounded (kg still
+  rounds to the tenth the wheels show); covered by a test over every notch.
+  The paired columns also went 18dp → 28dp apart: at 26pt the two halves of
+  the number were touching.
+- 2026-08-22 — **Phase 2 planned: [docs/05-app-structure.md](../docs/05-app-structure.md).**
+  Post-onboarding the app had a working loop and no shape: `library.tsx` was
+  unreachable (not in `BottomNav`, nothing routes to it), calories/TDEE/macros
+  were computed at onboarding and never shown again, `calorie_checkin` was a
+  table with no reader or writer, weekly volume was rendered by both `program`
+  and `progress`, and "Start training" led to a signup form and then a Home
+  screen that can say "Rest day". The doc sets the metric spine (one owner
+  screen per number, everywhere else a glance), the four tabs (Today / Plan /
+  Progress / Profile, library as a sub-route of Plan) and the handoff.
+- 2026-08-22 — **Ready screen rebuilt** (step 1 of that plan): days are
+  expandable and list their real exercises with `sets × rep range`; the
+  rationale is no longer printed twice; the plan name is a headline with chips
+  instead of a crammed two-line title; daily targets shrink to one line; the
+  dead "Later ›" link is gone.
+- 2026-08-22 — **Superseded: depth is sheets, not expandable rows.** Tapping a
+  day opens a bottom sheet (its exercises, sets × reps, sets by muscle); tapping
+  an exercise opens a second sheet on top (demo, cues, prescription, why it's in
+  the plan). The plan — and its accept button — stays behind both, so browsing
+  and accepting never involves a back-stack. Spec:
+  [design/prototype/plan-handoff.html](../design/prototype/plan-handoff.html).
 
 **Bugs:** none yet.
 
@@ -333,4 +388,6 @@ restored on launch.
 |---|------|------|-------------|--------|-----|
 | B1 | 2026-07-02 | prototype / dev-env | Preview server failed: sandbox blocks python `http.server`, and `npx serve` needs a network fetch. | fixed | Replaced with zero-dependency Node static server (`design/prototype/server.js`). |
 | B2 | 2026-08-21 | android build | `expo prebuild --clean` broke the Android build: `:expo-modules-core:compileDebugKotlin` failed with "Compose Compiler 1.5.15 requires Kotlin 1.9.25 … using 1.9.24". The regenerated template pins `kotlinVersion = 1.9.25` (→ Compose 1.5.15) but `@react-native/gradle-plugin` supplies the real compiler, and RN ≤ 0.76.6 pins Kotlin 1.9.24 (0.76.7+ pins 1.9.25). The stale `android/` had been generated by an older template, so the drift only surfaced on a clean prebuild. | fixed | `npx expo install --fix` → react-native 0.76.9, expo-sqlite ~15.1.4, react-native-screens ~4.4.0, @expo/vector-icons ~14.0.4. Keep dependencies on Expo's expected versions; `expo install --check` catches this before a prebuild does. |
-| B3 | 2026-08-21 | icons / assets | **No icon rendered anywhere in the app.** `expo-asset`'s `downloadAsync` rejected with "Module 'expo.modules.interfaces.filesystem.AppDirectories' not found", so the `@expo/vector-icons` font never loaded — and `createIconSet` renders an empty `<Text />` while `fontIsLoaded` is false, which fails silently instead of showing tofu. Cause: **`expo-file-system` was never installed**, and `expo-asset` does not declare it as a dependency, so nothing flagged it. Glyph names were all valid — the loader was the problem. | fixed | `npx expo install expo-file-system` + a native rebuild (new native module). Any remote-asset load — icon fonts, custom fonts, `expo-asset` images — depends on it. |
+| B3 | 2026-08-21 | icons / assets | **No icon rendered anywhere in the app.** `expo-asset`'s `downloadAsync` rejected with "Module 'expo.modules.interfaces.filesystem.AppDirectories' not found", so the `@expo/vector-icons` font never loaded — and `createIconSet` renders an empty `<Text />` while `fontIsLoaded` is false, which fails silently instead of showing tofu. Cause: **`expo-file-system` was never installed**, and `expo-asset` does not declare it as a dependency, so nothing flagged it. Glyph names were all valid — the loader was the problem. | fixed | `npx expo install expo-file-system` + a native rebuild (new native module). Any remote-asset load — icon fonts, custom fonts, `expo-asset` images — depends on it. **Recurred 2026-08-22** with the identical message: the fix was never actually running — the emulator held a dev client installed at 15:31, an hour before `expo-file-system` was added, while Metro kept serving fresh JS on top of it. Reinstalling the built APK fixed it. When a native module reports as missing, check the *installed* build first: `adb shell dumpsys package com.projectalpha.app | grep lastUpdateTime` against the APK's mtime. |
+| B4 | 2026-08-22 | icons / assets | Icons inside the new pickers (DOB calendar, dial affordance) rendered as nothing. Same mechanism as B3 but a different trigger: `@expo/vector-icons` loads its font **on first render** of an icon set and `createIconSet` draws an empty `<Text />` — silently — until the load resolves, so whichever screen renders first can come up iconless. | fixed | Preload it in `app/_layout.tsx`: `useFonts(MaterialCommunityIcons.font)`, gated with the existing migration/seed splash. The gate falls through on `fontError` so a failed font load can never brick the app. |
+| B5 | 2026-08-22 | launch | **No splash screen — a blank screen instead.** `expo-splash-screen` is configured in `app.json`, but nothing called `preventAutoHideAsync()`, so the native splash hid itself the moment the root component first rendered — which is `return null` while migrations, the exercise seed and the icon font are still in flight. | fixed | `SplashScreen.preventAutoHideAsync()` at module scope in `app/_layout.tsx`, `hideAsync()` from the tree's `onLayout` (and from the migration-error screen, which would otherwise stay hidden behind the splash). |
