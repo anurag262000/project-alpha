@@ -52,6 +52,8 @@ export interface GeneratedDay {
   weekday: number | null;
   orderIndex: number;
   label: string;
+  /** What the day is biased toward — shown next to the label ("Upper A · strength"). */
+  emphasis: Emphasis;
   exercises: GeneratedExercise[];
 }
 
@@ -69,7 +71,7 @@ export interface GeneratedProgram {
 
 // --- Step 1: split templates -----------------------------------------------
 
-type Emphasis = 'strength' | 'hypertrophy' | 'balanced';
+export type Emphasis = 'strength' | 'hypertrophy' | 'balanced';
 
 interface DayTemplate {
   label: string;
@@ -363,6 +365,13 @@ function minutesPerSet(goal: Goal): number {
   return (REP_RANGES[goal].restSec + 40) / 60;
 }
 
+/** Rest between working sets for a goal — shown on the plan and day sheets. */
+export const restSecFor = (goal: Goal): number => REP_RANGES[goal].restSec;
+
+/** Rough session length for a set count: 8 min warm-up + sets x (work + rest). */
+export const estimatedMinutes = (sets: number, goal: Goal): number =>
+  Math.round(8 + sets * minutesPerSet(goal));
+
 /** How many working sets fit in the user's session length (8 min warm-up). */
 export function setsPerSessionCap(sessionLengthMin: number, goal: Goal): number {
   return Math.max(6, Math.floor((sessionLengthMin - 8) / minutesPerSet(goal)));
@@ -498,6 +507,7 @@ export function generateProgram(
       weekday: trainingDays[dayIndex] ?? null,
       orderIndex: dayIndex,
       label: dayTpl.label,
+      emphasis: dayTpl.emphasis,
       exercises,
     };
   });
